@@ -46,7 +46,9 @@ defmodule BsvRpc.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.7", only: [:dev, :test], runtime: false},
-      {:mock, "~> 0.3.3", only: :test}
+      {:mock, "~> 0.3.3", only: :test},
+      {:httpoison, "~> 1.5"},
+      {:poison, "~> 4.0"},
     ]
   end
 
