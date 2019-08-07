@@ -1,12 +1,19 @@
 defmodule BsvRpc.MixProject do
   use Mix.Project
 
+  defp description do
+    "Bitcoin SV JSON-RPC client."
+  end
+
   def project do
     [
       app: :bsv_rpc,
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
+      source_url: "https://github.com/slashrsm/bsv_rpc",
+      description: description(),
+      package: package(),
       deps: deps(),
       elixirc_options: [warnings_as_errors: true],
       dialyzer: [
@@ -42,4 +49,14 @@ defmodule BsvRpc.MixProject do
       {:mock, "~> 0.3.3", only: :test}
     ]
   end
+
+  defp package do
+    [
+      files: ["lib", "mix.exs", "README.md"],
+      maintainers: ["Janez Urevc"],
+      licenses: ["MIT"],
+      links: %{"Github" => "https://github.com/slashrsm/bsv_rpc"}
+    ]
+  end
+
 end
