@@ -8,7 +8,7 @@ defmodule BsvRpc.Application do
     Supervisor.start_link(
       [%{
         id: Client,
-        start: {BsvRpc.Client, :start_link, [creds.username, creds.password, creds.hostname, creds.port]}
+        start: {BsvRpc.Client, :start_link, [creds[:username], creds[:password], creds[:hostname], creds[:port]]}
       }],
       [strategy: :one_for_one, name: BsvRpc.Supervisor]
     )
