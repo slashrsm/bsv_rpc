@@ -33,24 +33,29 @@ defmodule BsvRpcTest do
   end
 
   test_with_mock "genserver is called for get_memory_info", _context, GenServer, [],
-  call: fn _module, _context ->
-    %{
-      "locked" => %{
-        "chunks_free" => 8,
-        "chunks_used" => 2004,
-        "free" => 263552,
-        "locked" => 327680,
-        "total" => 327680,
-        "used" => 64128
-      },
-      "preloading" => %{"chainStateCached" => 100}
-    }
-  end do
-  info = BsvRpc.get_memory_info()
-  assert info["preloading"]["chainStateCached"] == 100
-  assert info["locked"]["free"] == 263552
+    call: fn _module, _context ->
+      %{
+        "locked" => %{
+          "chunks_free" => 8,
+          "chunks_used" => 2004,
+          "free" => 263_552,
+          "locked" => 327_680,
+          "total" => 327_680,
+          "used" => 64128
+        },
+        "preloading" => %{"chainStateCached" => 100}
+      }
+    end do
+    info = BsvRpc.get_memory_info()
+    assert info["preloading"]["chainStateCached"] == 100
+    assert info["locked"]["free"] == 263_552
 
-  assert called(GenServer.call(BsvRpc, {:call_endpoint, "getmemoryinfo"}))
-end
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getmemoryinfo"}))
+  end
 
+  test_with_mock "genserver is called for uptime", _context, GenServer, [],
+    call: fn _module, _context -> 158_535 end do
+    assert BsvRpc.uptime() == 158_535
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "uptime"}))
+  end
 end

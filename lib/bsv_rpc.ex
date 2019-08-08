@@ -12,10 +12,18 @@ defmodule BsvRpc do
   end
 
   @doc ~S"""
-  Returns node state info.
+  Returns node memory usage info.
   """
   @spec get_memory_info :: map()
   def get_memory_info() do
     GenServer.call(BsvRpc, {:call_endpoint, "getmemoryinfo"})
+  end
+
+  @doc ~S"""
+  Returns the node uptime info.
+  """
+  @spec uptime :: integer
+  def uptime() do
+    GenServer.call(BsvRpc, {:call_endpoint, "uptime"})
   end
 end
