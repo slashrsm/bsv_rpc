@@ -99,4 +99,22 @@ defmodule BsvRpcTest do
     assert BsvRpc.list_accounts()["account_1"] == 0.0
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "listaccounts", [1, false]}))
   end
+
+  test_with_mock "genserver is called for get_balance", _context, GenServer, [],
+    call: fn _module, _context -> 123.456 end do
+    assert BsvRpc.get_balance("foo", 5, true) == 123.456
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getbalance", ["foo", 5, true]}))
+  end
+
+  test_with_mock "default params for get_balance", _context, GenServer, [],
+    call: fn _module, _context -> 123.456 end do
+    assert BsvRpc.get_balance() == 123.456
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getbalance", ["", 1, false]}))
+  end
+
+  test_with_mock "genserver is called for get_unconfirmed_balance", _context, GenServer, [],
+    call: fn _module, _context -> 123.456 end do
+    assert BsvRpc.get_unconfirmed_balance() == 123.456
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getunconfirmedbalance"}))
+  end
 end
