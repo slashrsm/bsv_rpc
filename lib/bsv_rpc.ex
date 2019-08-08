@@ -72,8 +72,13 @@ defmodule BsvRpc do
     * `include_watchonly` - (Optional) Also include balance in watch-only addresses.
   """
   @spec get_balance(String.t(), integer, boolean) :: float
-  def get_balance(account \\ "", minconf \\ 1, include_watchonly \\ false) do
+  def get_balance(account, minconf, include_watchonly) do
     GenServer.call(BsvRpc, {:call_endpoint, "getbalance", [account, minconf, include_watchonly]})
+  end
+
+  @spec get_balance() :: float
+  def get_balance() do
+    GenServer.call(BsvRpc, {:call_endpoint, "getbalance"})
   end
 
   @doc ~S"""
