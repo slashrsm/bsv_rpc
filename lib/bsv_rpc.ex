@@ -3,6 +3,10 @@ defmodule BsvRpc do
   Documentation for BsvRpc.
   """
 
+  ###
+  # Control
+  ###
+
   @doc ~S"""
   Returns node state info.
   """
@@ -33,5 +37,17 @@ defmodule BsvRpc do
   @spec stop :: String.t()
   def stop() do
     GenServer.call(BsvRpc, {:call_endpoint, "stop"})
+  end
+
+  ###
+  # Wallet
+  ###
+
+  @doc ~S"""
+  Gets the wallet info.
+  """
+  @spec get_wallet_info :: map()
+  def get_wallet_info() do
+    GenServer.call(BsvRpc, {:call_endpoint, "getwalletinfo"})
   end
 end

@@ -64,4 +64,27 @@ defmodule BsvRpcTest do
     assert BsvRpc.stop() == "Bitcoin server stopping"
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "stop"}))
   end
+
+  test_with_mock "genserver is called for get_wallet_info", _context, GenServer, [],
+    call: fn _module, _context ->
+      %{
+        "balance" => 0.0,
+        "hdmasterkeyid" => "somekey",
+        "immature_balance" => 0.0,
+        "keypoololdest" => 1_565_036_155,
+        "keypoolsize" => 1000,
+        "keypoolsize_hd_internal" => 1000,
+        "paytxfee" => 0.0,
+        "txcount" => 245,
+        "unconfirmed_balance" => 0.0,
+        "walletname" => "wallet.dat",
+        "walletversion" => 160_300
+      }
+    end do
+    info = BsvRpc.get_wallet_info()
+    assert info["balance"] == 0.0
+    assert info["hdmasterkeyid"] == "somekey"
+
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getwalletinfo"}))
+  end
 end
