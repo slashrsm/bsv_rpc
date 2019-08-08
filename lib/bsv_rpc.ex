@@ -67,15 +67,18 @@ defmodule BsvRpc do
   Gets wallet balance.
 
   Args:
-    * `account` - (Deprecated, Optional) The account name to get balance for.
-    * `minconf` - (Optional) Only include transactions with at least this many transactions.
-    * `include_watchonly` - (Optional) Also include balance in watch-only addresses.
+    * `account` - The account name to get balance for.
+    * `minconf` - Only include transactions with at least this many transactions.
+    * `include_watchonly` - Also include balance in watch-only addresses.
   """
   @spec get_balance(String.t(), integer, boolean) :: float
   def get_balance(account, minconf, include_watchonly) do
     GenServer.call(BsvRpc, {:call_endpoint, "getbalance", [account, minconf, include_watchonly]})
   end
 
+  @doc ~S"""
+  Gets server's total balance.
+  """
   @spec get_balance() :: float
   def get_balance() do
     GenServer.call(BsvRpc, {:call_endpoint, "getbalance"})
@@ -100,8 +103,30 @@ defmodule BsvRpc do
     GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress", [account]})
   end
 
+  @doc ~S"""
+  Gets new address for the default account.
+  """
   @spec get_new_address() :: float
   def get_new_address() do
     GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress"})
+  end
+
+  @doc ~S"""
+  Gets addresses for the account.
+
+  Args:
+    * `account` - The account name to get addresses for.
+  """
+  @spec get_addresses_by_account(String.t()) :: list()
+  def get_addresses_by_account(account) do
+    GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [account]})
+  end
+
+  @doc ~S"""
+  Gets addresses for the default account.
+  """
+  @spec get_addresses() :: float
+  def get_addresses() do
+    GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [""]})
   end
 end
