@@ -58,4 +58,10 @@ defmodule BsvRpcTest do
     assert BsvRpc.uptime() == 158_535
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "uptime"}))
   end
+
+  test_with_mock "genserver is called for stop", _context, GenServer, [],
+    call: fn _module, _context -> "Bitcoin server stopping" end do
+    assert BsvRpc.stop() == "Bitcoin server stopping"
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "stop"}))
+  end
 end

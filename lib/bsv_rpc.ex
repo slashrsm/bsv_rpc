@@ -26,4 +26,12 @@ defmodule BsvRpc do
   def uptime() do
     GenServer.call(BsvRpc, {:call_endpoint, "uptime"})
   end
+
+  @doc ~S"""
+  Stops the node.
+  """
+  @spec stop :: String.t()
+  def stop() do
+    GenServer.call(BsvRpc, {:call_endpoint, "stop"})
+  end
 end
