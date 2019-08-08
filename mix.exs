@@ -19,15 +19,6 @@ defmodule BsvRpc.MixProject do
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
         ignore_warnings: ".dialyzer_ignore.exs"
-      ],
-      aliases: [
-        quality: ["format", "credo --strict", "dialyzer", "test"],
-        "quality.ci": [
-          "test",
-          "format --check-formatted",
-          "credo --strict",
-          "dialyzer --halt-exit-status"
-        ]
       ]
     ]
   end
@@ -43,12 +34,10 @@ defmodule BsvRpc.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev, :test], runtime: false},
-      {:sobelow, "~> 0.7", only: [:dev, :test], runtime: false},
+      {:ex_check, ">= 0.0.0", only: :dev, runtime: false},
       {:mock, "~> 0.3.3", only: :test},
       {:httpoison, "~> 1.5"},
-      {:poison, "~> 4.0"},
+      {:poison, "~> 4.0"}
     ]
   end
 
@@ -60,5 +49,4 @@ defmodule BsvRpc.MixProject do
       links: %{"Github" => "https://github.com/slashrsm/bsv_rpc"}
     ]
   end
-
 end

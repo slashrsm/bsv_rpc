@@ -30,3 +30,5 @@ bsv_rpc-*.tar
 .sobelow
 
 .elixir_ls
+
+/config/
