@@ -117,4 +117,16 @@ defmodule BsvRpcTest do
     assert BsvRpc.get_unconfirmed_balance() == 123.456
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getunconfirmedbalance"}))
   end
+
+  test_with_mock "genserver is called for get_new_address", _context, GenServer, [],
+    call: fn _module, _context -> "someaddress" end do
+    assert BsvRpc.get_new_address("foo") == "someaddress"
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress", ["foo"]}))
+  end
+
+  test_with_mock "default params for get_new_address", _context, GenServer, [],
+    call: fn _module, _context -> "someaddress" end do
+    assert BsvRpc.get_new_address() == "someaddress"
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress"}))
+  end
 end

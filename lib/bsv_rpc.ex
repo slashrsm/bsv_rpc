@@ -88,4 +88,20 @@ defmodule BsvRpc do
   def get_unconfirmed_balance() do
     GenServer.call(BsvRpc, {:call_endpoint, "getunconfirmedbalance"})
   end
+
+  @doc ~S"""
+  Gets new address.
+
+  Args:
+    * `account` - (Deprecated, Optional) The account name to get address for.
+  """
+  @spec get_new_address(String.t()) :: String.t()
+  def get_new_address(account) do
+    GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress", [account]})
+  end
+
+  @spec get_new_address() :: float
+  def get_new_address() do
+    GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress"})
+  end
 end
