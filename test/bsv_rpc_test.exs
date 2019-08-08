@@ -31,4 +31,26 @@ defmodule BsvRpcTest do
 
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getinfo"}))
   end
+
+  test_with_mock "genserver is called for get_memory_info", _context, GenServer, [],
+  call: fn _module, _context ->
+    %{
+      "locked" => %{
+        "chunks_free" => 8,
+        "chunks_used" => 2004,
+        "free" => 263552,
+        "locked" => 327680,
+        "total" => 327680,
+        "used" => 64128
+      },
+      "preloading" => %{"chainStateCached" => 100}
+    }
+  end do
+  info = BsvRpc.get_memory_info()
+  assert info["preloading"]["chainStateCached"] == 100
+  assert info["locked"]["free"] == 263552
+
+  assert called(GenServer.call(BsvRpc, {:call_endpoint, "getmemoryinfo"}))
+end
+
 end

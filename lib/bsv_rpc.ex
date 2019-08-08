@@ -10,4 +10,12 @@ defmodule BsvRpc do
   def get_info() do
     GenServer.call(BsvRpc, {:call_endpoint, "getinfo"})
   end
+
+  @doc ~S"""
+  Returns node state info.
+  """
+  @spec get_memory_info :: map()
+  def get_memory_info() do
+    GenServer.call(BsvRpc, {:call_endpoint, "getmemoryinfo"})
+  end
 end
