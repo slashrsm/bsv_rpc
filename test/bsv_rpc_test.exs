@@ -87,4 +87,16 @@ defmodule BsvRpcTest do
 
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getwalletinfo"}))
   end
+
+  test_with_mock "genserver is called for list_accounts", _context, GenServer, [],
+    call: fn _module, _context -> %{"account_1" => 0.0} end do
+    assert BsvRpc.list_accounts(3, true)["account_1"] == 0.0
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "listaccounts", [3, true]}))
+  end
+
+  test_with_mock "default params for list_accounts", _context, GenServer, [],
+    call: fn _module, _context -> %{"account_1" => 0.0} end do
+    assert BsvRpc.list_accounts()["account_1"] == 0.0
+    assert called(GenServer.call(BsvRpc, {:call_endpoint, "listaccounts", [1, false]}))
+  end
 end

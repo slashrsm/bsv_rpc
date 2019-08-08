@@ -50,4 +50,12 @@ defmodule BsvRpc do
   def get_wallet_info() do
     GenServer.call(BsvRpc, {:call_endpoint, "getwalletinfo"})
   end
+
+  @doc ~S"""
+  Lists wallet accounts.
+  """
+  @spec list_accounts(integer, boolean) :: map()
+  def list_accounts(minconf \\ 1, include_watchonly \\ false) do
+    GenServer.call(BsvRpc, {:call_endpoint, "listaccounts", [minconf, include_watchonly]})
+  end
 end

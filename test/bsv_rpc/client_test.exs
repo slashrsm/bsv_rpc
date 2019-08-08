@@ -62,7 +62,7 @@ defmodule BsvRpc.ClientTest do
     end do
     response =
       BsvRpc.Client.handle_call(
-        {:call_endpoint, "somemethod", [1, 2, 3]},
+        {:call_endpoint, "somemethod", [1, "foo", %{"bar" => "baz"}]},
         self(),
         %{
           host: "host",
@@ -79,7 +79,7 @@ defmodule BsvRpc.ClientTest do
     assert called(
              HTTPoison.post(
                "http://host:12345",
-               "{\"params\":[\"1\",\"2\",\"3\"],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
+               "{\"params\":[1,\"foo\",\"{\\\"bar\\\":\\\"baz\\\"}\"],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
                [{"Content-Type", "text/plain"}],
                hackney: [basic_auth: {"username", "password"}]
              )
