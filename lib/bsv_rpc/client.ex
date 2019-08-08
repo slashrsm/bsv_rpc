@@ -3,14 +3,10 @@ defmodule BsvRpc.Client do
   use GenServer
   require Logger
 
-  def set_webhook(url, allowed_updates \\ ["message"]) do
-    GenServer.cast(Telegram, {:webhook, url, allowed_updates})
-  end
-
   ###
   # GenServer API
   ###
-
+  @spec start_link(any, any, any, any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(username, password, host \\ "localhost", port \\ 8332) do
     GenServer.start_link(
       __MODULE__,
@@ -18,9 +14,10 @@ defmodule BsvRpc.Client do
         host: host,
         port: port,
         username: username,
-        password: password,
+        password: password
       },
-      name: BsvRpc)
+      name: BsvRpc
+    )
   end
 
   def init(state) do
@@ -38,7 +35,7 @@ defmodule BsvRpc.Client do
           "jsonrpc" => "1.0",
           "id" => "bsv_rpc",
           "method" => method,
-          "params" => params,
+          "params" => Enum.map(params, fn p -> Poison.encode!(p) end)
         }),
         [{"Content-Type", "text/plain"}],
         hackney: [basic_auth: {state.username, state.password}]
@@ -49,4 +46,7 @@ defmodule BsvRpc.Client do
     {:reply, result, state}
   end
 
+  def handle_call({:call_endpoint, method}, from, state) do
+    BsvRpc.Client.handle_call({:call_endpoint, method, []}, from, state)
+  end
 end
