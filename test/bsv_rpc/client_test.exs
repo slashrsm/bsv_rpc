@@ -1,7 +1,7 @@
 defmodule BsvRpc.ClientTest do
   use ExUnit.Case
   import Mock
-  doctest BsvRpc
+  doctest BsvRpc.Client
 
   test "init returns unchanged state" do
     assert BsvRpc.Client.init(%{foo: "bar"}) == {:ok, %{foo: "bar"}}
