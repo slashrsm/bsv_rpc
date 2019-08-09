@@ -16,7 +16,7 @@ defmodule BsvRpcTest do
         "maxblocksize" => 2_000_000_000,
         "maxminedblocksize" => 128_000_000,
         "paytxfee" => 0.0,
-        "protocolversion" => 70015,
+        "protocolversion" => 70_015,
         "proxy" => "",
         "relayfee" => 1.0e-5,
         "stn" => false,
@@ -41,7 +41,7 @@ defmodule BsvRpcTest do
           "free" => 263_552,
           "locked" => 327_680,
           "total" => 327_680,
-          "used" => 64128
+          "used" => 64_128
         },
         "preloading" => %{"chainStateCached" => 100}
       }

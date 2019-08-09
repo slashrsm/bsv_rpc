@@ -66,7 +66,7 @@ defmodule BsvRpc.ClientTest do
         self(),
         %{
           host: "host",
-          port: 12345,
+          port: 12_345,
           username: "username",
           password: "password"
         }
@@ -74,7 +74,7 @@ defmodule BsvRpc.ClientTest do
 
     assert response ==
              {:reply, %{"foo" => "bar"},
-              %{host: "host", password: "password", port: 12345, username: "username"}}
+              %{host: "host", password: "password", port: 12_345, username: "username"}}
 
     assert called(
              HTTPoison.post(
@@ -105,7 +105,7 @@ defmodule BsvRpc.ClientTest do
         self(),
         %{
           host: "host",
-          port: 12345,
+          port: 12_345,
           username: "username",
           password: "password"
         }
@@ -113,7 +113,7 @@ defmodule BsvRpc.ClientTest do
 
     assert response ==
              {:reply, %{"foo" => "bar"},
-              %{host: "host", password: "password", port: 12345, username: "username"}}
+              %{host: "host", password: "password", port: 12_345, username: "username"}}
 
     assert called(
              HTTPoison.post(

@@ -1,4 +1,7 @@
 defmodule BsvRpc.Client do
+  @moduledoc """
+  Client that communicates with the Bitcoin node.
+  """
   import HTTPoison
   use GenServer
   require Logger

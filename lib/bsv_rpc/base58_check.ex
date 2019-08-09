@@ -69,13 +69,11 @@ defmodule BsvRpc.Base58Check do
   """
   @spec decode(String.t()) :: {:ok, binary()} | {:error, String.t()}
   def decode(str) do
-    try do
-      decoded = decode!(str)
-      {:ok, decoded}
-    rescue
-      MatchError -> {:error, "Checksum validation failed."}
-      ArgumentError -> {:error, "Input invalid."}
-    end
+    decoded = decode!(str)
+    {:ok, decoded}
+  rescue
+    MatchError -> {:error, "Checksum validation failed."}
+    ArgumentError -> {:error, "Input invalid."}
   end
 
   defp base58_decode([], acc), do: acc

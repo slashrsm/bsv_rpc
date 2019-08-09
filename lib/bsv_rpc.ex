@@ -11,7 +11,7 @@ defmodule BsvRpc do
   Returns node state info.
   """
   @spec get_info :: map()
-  def get_info() do
+  def get_info do
     GenServer.call(BsvRpc, {:call_endpoint, "getinfo"})
   end
 
@@ -19,7 +19,7 @@ defmodule BsvRpc do
   Returns node memory usage info.
   """
   @spec get_memory_info :: map()
-  def get_memory_info() do
+  def get_memory_info do
     GenServer.call(BsvRpc, {:call_endpoint, "getmemoryinfo"})
   end
 
@@ -27,7 +27,7 @@ defmodule BsvRpc do
   Returns the node uptime info.
   """
   @spec uptime :: integer
-  def uptime() do
+  def uptime do
     GenServer.call(BsvRpc, {:call_endpoint, "uptime"})
   end
 
@@ -35,7 +35,7 @@ defmodule BsvRpc do
   Stops the node.
   """
   @spec stop :: String.t()
-  def stop() do
+  def stop do
     GenServer.call(BsvRpc, {:call_endpoint, "stop"})
   end
 
@@ -47,7 +47,7 @@ defmodule BsvRpc do
   Gets the wallet info.
   """
   @spec get_wallet_info :: map()
-  def get_wallet_info() do
+  def get_wallet_info do
     GenServer.call(BsvRpc, {:call_endpoint, "getwalletinfo"})
   end
 
@@ -79,16 +79,16 @@ defmodule BsvRpc do
   @doc ~S"""
   Gets server's total balance.
   """
-  @spec get_balance() :: float
-  def get_balance() do
+  @spec get_balance :: float
+  def get_balance do
     GenServer.call(BsvRpc, {:call_endpoint, "getbalance"})
   end
 
   @doc ~S"""
   Gets wallet unconfirmed balance.
   """
-  @spec get_unconfirmed_balance() :: float
-  def get_unconfirmed_balance() do
+  @spec get_unconfirmed_balance :: float
+  def get_unconfirmed_balance do
     GenServer.call(BsvRpc, {:call_endpoint, "getunconfirmedbalance"})
   end
 
@@ -106,8 +106,8 @@ defmodule BsvRpc do
   @doc ~S"""
   Gets new address for the default account.
   """
-  @spec get_new_address() :: float
-  def get_new_address() do
+  @spec get_new_address :: float
+  def get_new_address do
     GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress"})
   end
 
@@ -125,8 +125,8 @@ defmodule BsvRpc do
   @doc ~S"""
   Gets addresses for the default account.
   """
-  @spec get_addresses() :: float
-  def get_addresses() do
+  @spec get_addresses :: float
+  def get_addresses do
     GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [""]})
   end
 end
