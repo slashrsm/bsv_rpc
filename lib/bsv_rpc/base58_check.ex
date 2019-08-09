@@ -9,55 +9,72 @@ defmodule BsvRpc.Base58Check do
   @doc """
   Decodes a base58check encoded data.
 
-  ## Examples
-    iex> BsvRpc.Base58Check.decode("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")
-    <<101, 161, 96, 89, 134, 74, 47, 219, 199, 201, 154, 71, 35, 168, 57, 91, 198, 241, 136, 235>>
+  An ArgumentError exception is raised if the invalid input is provided or MatchError exception is raised if
+  the checksum does not validate.
 
-    iex> decoded = BsvRpc.Base58Check.decode("3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou")
+  ## Examples
+    iex> BsvRpc.Base58Check.decode!("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")
+    <<0, 101, 161, 96, 89, 134, 74, 47, 219, 199, 201, 154, 71, 35, 168, 57, 91, 198, 241, 136, 235>>
+
+    iex> <<_prefix::size(8), decoded::binary>> = BsvRpc.Base58Check.decode!("3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou")
     iex> Base.encode16(decoded, case: :lower)
     "74f209f6ea907e2ea48f74fae05782ae8a665257"
 
-    iex> decoded = BsvRpc.Base58Check.decode("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs")
+    iex> <<_prefix::size(8), decoded::binary>> = BsvRpc.Base58Check.decode!("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs")
     iex> Base.encode16(decoded, case: :lower)
     "53c0307d6851aa0ce7825ba883c6bd9ad242b486"
   """
-  @spec decode(String.t()) :: binary
-  def decode(str) do
-    #IO.inspect String.length(str) * 733 / 1000 + 1
-    common = str
+  @spec decode!(String.t()) :: binary
+  def decode!(str) do
+    common =
+      str
       |> to_charlist()
       |> base58_decode(0)
-      # From the node implementaiton https://github.com/bitcoin-sv/bitcoin-sv/blob/f5503f0fe1a30db70b9a07b2a22e27468bf1b59a/src/base58.cpp#L37
+      # From the node implementaiton
+      # https://github.com/bitcoin-sv/bitcoin-sv/blob/f5503f0fe1a30db70b9a07b2a22e27468bf1b59a/src/base58.cpp#L37
       |> num_to_bytes(round(String.length(str) * 733 / 1000), :big)
-    #IO.inspect common
 
-    len_without_zeros = String.length(String.trim_leading(str, "1"))
-    common = if count_leading_zero_bytes(common, 0) > 0 and len_without_zeros == String.length(str) do
-      remove_leading_zero_bytes(common)
-    else
-      common
-    end
+    common =
+      if count_leading_zero_bytes(common, 0) > 0 and
+           String.length(String.trim_leading(str, "1")) == String.length(str) do
+        remove_leading_zero_bytes(common)
+      else
+        common
+      end
 
     payload_size = byte_size(common) - 4
     <<payload::binary-size(payload_size), checksum::binary-size(4)>> = common
 
     ## Validate the checksum.
     <<checksum_valid::binary-size(4), _rest::binary>> = double_sha256(payload)
-    #IO.inspect str
-    #IO.inspect common
-    #IO.inspect checksum
-    #IO.inspect checksum_valid
     ^checksum = checksum_valid
 
-    <<prefix::size(8), encoded_data::binary>> = payload
-    # WIF private key migt have a 0x01byte added at the end if the public key
-    # is compressed.
-    size = byte_size(encoded_data) - 1
-    if (prefix == 128 or prefix == 239) and size == 32 and 1 == :binary.last(encoded_data) do
-      <<encoded_data::binary-size(size), _suffix::binary>> = encoded_data
-      encoded_data
-    else
-      encoded_data
+    payload
+  end
+
+  @doc """
+  Decodes a base58check encoded data.
+
+  ## Examples
+    iex> BsvRpc.Base58Check.decode("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")
+    {:ok, <<0, 101, 161, 96, 89, 134, 74, 47, 219, 199, 201, 154, 71, 35, 168, 57, 91, 198, 241, 136, 235>>}
+
+    iex> {:ok, <<_prefix::size(8), decoded::binary>>} = BsvRpc.Base58Check.decode("3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou")
+    iex> Base.encode16(decoded, case: :lower)
+    "74f209f6ea907e2ea48f74fae05782ae8a665257"
+
+    iex> {:ok, <<_prefix::size(8), decoded::binary>>} = BsvRpc.Base58Check.decode("mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs")
+    iex> Base.encode16(decoded, case: :lower)
+    "53c0307d6851aa0ce7825ba883c6bd9ad242b486"
+  """
+  @spec decode(String.t()) :: {:ok, binary()} | {:error, String.t()}
+  def decode(str) do
+    try do
+      decoded = decode!(str)
+      {:ok, decoded}
+    rescue
+      MatchError -> {:error, "Checksum validation failed."}
+      ArgumentError -> {:error, "Input invalid."}
     end
   end
 
@@ -74,10 +91,12 @@ defmodule BsvRpc.Base58Check do
     iex> BsvRpc.Base58Check.encode(<<0, 101, 161, 96, 89, 134, 74, 47, 219, 199, 201, 154, 71, 35, 168, 57, 91, 198, 241, 136, 235>>)
     "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i"
 
-    iex> BsvRpc.Base58Check.encode(Base.decode16!("74f209f6ea907e2ea48f74fae05782ae8a665257", case: :lower))
+    iex> hex_encoded = Base.decode16!("74f209f6ea907e2ea48f74fae05782ae8a665257", case: :lower)
+    iex> BsvRpc.Base58Check.encode(<<0x05>> <> hex_encoded)
     "3CMNFxN1oHBc4R1EpboAL5yzHGgE611Xou"
 
-    iex> BsvRpc.Base58Check.encode(Base.decode16!("53c0307d6851aa0ce7825ba883c6bd9ad242b486", case: :lower))
+    iex> hex_encoded = Base.decode16!("53c0307d6851aa0ce7825ba883c6bd9ad242b486", case: :lower)
+    iex> BsvRpc.Base58Check.encode(<<0x6f>> <> hex_encoded)
     "mo9ncXisMeAoXwqcV5EWuyncbmCcQN4rVs"
   """
   @spec encode(binary) :: String.t()
