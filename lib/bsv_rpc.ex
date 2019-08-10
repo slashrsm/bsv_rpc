@@ -98,17 +98,19 @@ defmodule BsvRpc do
   Args:
     * `account` - (Deprecated, Optional) The account name to get address for.
   """
-  @spec get_new_address(String.t()) :: String.t()
+  @spec get_new_address(String.t()) :: BsvRpc.Address.t()
   def get_new_address(account) do
     GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress", [account]})
+    |> BsvRpc.Address.create!()
   end
 
   @doc ~S"""
   Gets new address for the default account.
   """
-  @spec get_new_address :: float
+  @spec get_new_address :: BsvRpc.Address.t()
   def get_new_address do
     GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress"})
+    |> BsvRpc.Address.create!()
   end
 
   @doc ~S"""
@@ -117,16 +119,18 @@ defmodule BsvRpc do
   Args:
     * `account` - The account name to get addresses for.
   """
-  @spec get_addresses_by_account(String.t()) :: list()
+  @spec get_addresses_by_account(String.t()) :: [BsvRpc.Address.t()]
   def get_addresses_by_account(account) do
     GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [account]})
+    |> Enum.map(fn address -> BsvRpc.Address.create!(address) end)
   end
 
   @doc ~S"""
   Gets addresses for the default account.
   """
-  @spec get_addresses :: float
+  @spec get_addresses :: [BsvRpc.Address.t()]
   def get_addresses do
     GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [""]})
+    |> Enum.map(fn address -> BsvRpc.Address.create!(address) end)
   end
 end

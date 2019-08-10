@@ -119,26 +119,64 @@ defmodule BsvRpcTest do
   end
 
   test_with_mock "genserver is called for get_new_address", _context, GenServer, [],
-    call: fn _module, _context -> "someaddress" end do
-    assert BsvRpc.get_new_address("foo") == "someaddress"
+    call: fn _module, _context -> "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i" end do
+    assert %BsvRpc.Address{
+             address: "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i",
+             network: :mainnet,
+             type: :pubkey
+           } == BsvRpc.get_new_address("foo")
+
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress", ["foo"]}))
   end
 
   test_with_mock "default params for get_new_address", _context, GenServer, [],
-    call: fn _module, _context -> "someaddress" end do
-    assert BsvRpc.get_new_address() == "someaddress"
+    call: fn _module, _context -> "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i" end do
+    assert %BsvRpc.Address{
+             address: "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i",
+             network: :mainnet,
+             type: :pubkey
+           } == BsvRpc.get_new_address()
+
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getnewaddress"}))
   end
 
   test_with_mock "genserver is called for get_addresses_by_account", _context, GenServer, [],
-    call: fn _module, _context -> ["someaddress"] end do
-    assert BsvRpc.get_addresses_by_account("foo") == ["someaddress"]
+    call: fn _module, _context ->
+      ["1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i", "1Ax4gZtb7gAit2TivwejZHYtNNLT18PUXJ"]
+    end do
+    assert [
+             %BsvRpc.Address{
+               address: "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i",
+               network: :mainnet,
+               type: :pubkey
+             },
+             %BsvRpc.Address{
+               address: "1Ax4gZtb7gAit2TivwejZHYtNNLT18PUXJ",
+               network: :mainnet,
+               type: :pubkey
+             }
+           ] == BsvRpc.get_addresses_by_account("foo")
+
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", ["foo"]}))
   end
 
   test_with_mock "genserver is called for get_addresses", _context, GenServer, [],
-    call: fn _module, _context -> ["someaddress"] end do
-    assert BsvRpc.get_addresses() == ["someaddress"]
+    call: fn _module, _context ->
+      ["1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i", "1Ax4gZtb7gAit2TivwejZHYtNNLT18PUXJ"]
+    end do
+    assert [
+             %BsvRpc.Address{
+               address: "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i",
+               network: :mainnet,
+               type: :pubkey
+             },
+             %BsvRpc.Address{
+               address: "1Ax4gZtb7gAit2TivwejZHYtNNLT18PUXJ",
+               network: :mainnet,
+               type: :pubkey
+             }
+           ] == BsvRpc.get_addresses()
+
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [""]}))
   end
 end
