@@ -31,7 +31,7 @@ defmodule BsvRpc.TransactionOutput do
   ## Example
 
     iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC" <> "9504D702000000001976A914B9B9EDB47415C3D6980FEC683C60B8B74754DF9988AC" <> "AABB"
-    iex> BsvRpc.TransactionOutput.create(Base.decode16!(tx_out), 2)
+    iex> tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create(2)
     {[
       %BsvRpc.TransactionOutput{
         script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218,
@@ -56,14 +56,14 @@ defmodule BsvRpc.TransactionOutput do
   ## Example
 
     iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
-    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_out))
+    iex> tx_out|> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
     %BsvRpc.TransactionOutput{
       script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218,
         58, 115, 25, 64, 161, 241, 147, 45, 133, 63, 136, 172>>,
       value: 10289728209
     }
     iex> tx_out = tx_out <> "FF"
-    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_out))
+    iex> tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
     ** (MatchError) no match of right hand side value: {[%BsvRpc.TransactionOutput{script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218, 58, 115, 25, 64, 161, 241, 147, 45, 133, 63, 136, 172>>, value: 10289728209}], <<255>>}
   """
   @spec create_single(binary) :: __MODULE__.t()
@@ -84,6 +84,23 @@ defmodule BsvRpc.TransactionOutput do
     }
 
     do_create(rest, [output | outputs], output_count - 1)
+  end
+
+  @doc """
+  Gets the binary representation of the transaction output.
+
+  ## Examples
+
+    iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
+    iex> t = tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
+    iex> t |> BsvRpc.TransactionOutput.to_binary() |> Base.encode16()
+    "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
+  """
+  @spec to_binary(__MODULE__.t()) :: binary
+  def to_binary(tx_out) do
+    <<tx_out.value::little-size(64)>> <>
+      BsvRpc.Helpers.to_varint(byte_size(tx_out.script_pubkey)) <>
+      tx_out.script_pubkey
   end
 
   @doc """

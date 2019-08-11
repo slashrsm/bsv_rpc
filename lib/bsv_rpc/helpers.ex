@@ -64,6 +64,29 @@ defmodule BsvRpc.Helpers do
   end
 
   @doc """
+  Gets variable length integer representation of a number.
+
+  ## Examples
+
+    iex> BsvRpc.Helpers.to_varint(1)
+    <<0x01>>
+
+    iex> BsvRpc.Helpers.to_varint(32768)
+    <<0xFD, 0x00, 0x80>>
+
+    iex> BsvRpc.Helpers.to_varint(4294967295)
+    <<0xFE, 0xFF, 0xFF, 0xFF, 0xFF>>
+
+    iex> BsvRpc.Helpers.to_varint(18446744073709551615)
+    <<0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF>>
+  """
+  @spec to_varint(non_neg_integer) :: binary
+  def to_varint(number) when number < 0xFD, do: <<number::little-size(8)>>
+  def to_varint(number) when number <= 0xFFFF, do: <<0xFD, number::little-size(16)>>
+  def to_varint(number) when number <= 0xFFFFFFFF, do: <<0xFE, number::little-size(32)>>
+  def to_varint(number), do: <<0xFF, number::little-size(64)>>
+
+  @doc """
   Gets variable length data (defines with variable length prefix bytes) from the beginning of the binary.
 
   Returns a tuple with the variable length data as the first element and the rest of the original binary as
