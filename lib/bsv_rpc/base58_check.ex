@@ -46,7 +46,7 @@ defmodule BsvRpc.Base58Check do
     <<payload::binary-size(payload_size), checksum::binary-size(4)>> = common
 
     ## Validate the checksum.
-    <<checksum_valid::binary-size(4), _rest::binary>> = double_sha256(payload)
+    <<checksum_valid::binary-size(4), _rest::binary>> = BsvRpc.Helpers.double_sha256(payload)
     ^checksum = checksum_valid
 
     payload
@@ -99,7 +99,7 @@ defmodule BsvRpc.Base58Check do
   """
   @spec encode(binary) :: String.t()
   def encode(data) do
-    <<checksum::binary-size(4), _rest::binary>> = double_sha256(data)
+    <<checksum::binary-size(4), _rest::binary>> = BsvRpc.Helpers.double_sha256(data)
 
     encoded = base58_encode(:binary.decode_unsigned(data <> checksum, :big), "")
 
@@ -130,11 +130,6 @@ defmodule BsvRpc.Base58Check do
   end
 
   defp count_leading_zero_bytes(_data, count), do: count
-
-  @spec double_sha256(binary) :: binary
-  defp double_sha256(data) do
-    :crypto.hash(:sha256, :crypto.hash(:sha256, data))
-  end
 
   defp num_to_bytes(number, num_bytes, endian) do
     result = :binary.encode_unsigned(number, endian)
