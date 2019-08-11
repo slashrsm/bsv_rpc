@@ -32,6 +32,22 @@ defmodule BsvRpc.TransactionInput do
   Creates a single transaction input from a binary blob.
 
   Raises `MatchError` if the binary includes any more data after the first input.
+
+  ## Example
+
+    iex> tx_in = "cf3e4414a1a65b96a5485f7a497fed32c0c90e95e4ff334a79559ad9b14920e90100000006aabbccddeeffffffffff"
+    iex> BsvRpc.TransactionInput.create_single(Base.decode16!(tx_in, case: :lower))
+    %BsvRpc.TransactionInput{
+      previous_output: 1,
+      previous_transaction: <<207, 62, 68, 20, 161, 166, 91, 150, 165, 72, 95, 122,
+        73, 127, 237, 50, 192, 201, 14, 149, 228, 255, 51, 74, 121, 85, 154, 217,
+        177, 73, 32, 233>>,
+      script_sig: <<170, 187, 204, 221, 238, 255>>,
+      sequence: 4294967295
+    }
+    iex> tx_in = tx_in <> "ff"
+    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_in, case: :lower))
+    ** (MatchError) no match of right hand side value: <<72, 95, 122, 73, 127, 237, 50, 192, 201, 14, 149, 228, 255, 51, 74, 121, 85, 154, 217, 177, 73, 32, 233, 1, 0, 0, 0, 6, 170, 187, 204, 221, 238, 255, 255, 255, 255, 255, 255>>
   """
   @spec create_single(binary) :: __MODULE__.t()
   def create_single(tx_in_blob) do
