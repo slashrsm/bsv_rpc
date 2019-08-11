@@ -25,13 +25,13 @@ defmodule BsvRpc.TransactionOutput do
 
   ## Arguments
 
-    - `tx_in_blob` - Binary blob to parse transaction outputs from
+    - `tx_out_blob` - Binary blob to parse transaction outputs from.
     - `output_count` - Number of transactions outputs to parse.
 
   ## Example
 
-    iex> tx_out = "d1ca5065020000001976a91437e5cf12edec76cc89da3a731940a1f1932d853f88ac" <> "9504d702000000001976a914b9b9edb47415c3d6980fec683c60b8b74754df9988ac" <> "aabb"
-    iex> BsvRpc.TransactionOutput.create(Base.decode16!(tx_out, case: :lower), 2)
+    iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC" <> "9504D702000000001976A914B9B9EDB47415C3D6980FEC683C60B8B74754DF9988AC" <> "AABB"
+    iex> BsvRpc.TransactionOutput.create(Base.decode16!(tx_out), 2)
     {[
       %BsvRpc.TransactionOutput{
         script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218,
@@ -43,32 +43,32 @@ defmodule BsvRpc.TransactionOutput do
           15, 236, 104, 60, 96, 184, 183, 71, 84, 223, 153, 136, 172>>,
         value: 47645845
       }
-    ], <<0xaa, 0xbb>>}
+    ], <<0xAA, 0xBB>>}
   """
   @spec create(binary, non_neg_integer) :: {[__MODULE__.t()], binary}
-  def create(tx_in_blob, output_count), do: do_create(tx_in_blob, [], output_count)
+  def create(tx_out_blob, output_count), do: do_create(tx_out_blob, [], output_count)
 
   @doc """
-  Creates a single transaction input from a binary blob.
+  Creates a single transaction output from a binary blob.
 
   Raises `MatchError` if the binary includes any more data after the first transaction output.
 
   ## Example
 
-    iex> tx_out = "d1ca5065020000001976a91437e5cf12edec76cc89da3a731940a1f1932d853f88ac"
-    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_out, case: :lower))
+    iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
+    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_out))
     %BsvRpc.TransactionOutput{
       script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218,
         58, 115, 25, 64, 161, 241, 147, 45, 133, 63, 136, 172>>,
       value: 10289728209
     }
-    iex> tx_out = tx_out <> "ff"
-    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_out, case: :lower))
+    iex> tx_out = tx_out <> "FF"
+    iex> BsvRpc.TransactionOutput.create_single(Base.decode16!(tx_out))
     ** (MatchError) no match of right hand side value: {[%BsvRpc.TransactionOutput{script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218, 58, 115, 25, 64, 161, 241, 147, 45, 133, 63, 136, 172>>, value: 10289728209}], <<255>>}
   """
   @spec create_single(binary) :: __MODULE__.t()
-  def create_single(tx_in_blob) do
-    {[tx_in | []], <<>>} = do_create(tx_in_blob, [], 1)
+  def create_single(tx_out_blob) do
+    {[tx_in | []], <<>>} = do_create(tx_out_blob, [], 1)
     tx_in
   end
 

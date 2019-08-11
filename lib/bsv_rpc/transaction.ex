@@ -4,7 +4,7 @@ defmodule BsvRpc.Transaction do
   Functions for Bitcoin transaction manipulation.
   """
 
-  @enforce_keys [:hash, :inputs, :outputs, :version, :locktime]
+  @enforce_keys [:hash, :inputs, :outputs, :version, :locktime, :size]
 
   @typedoc """
   A Bitcoin transaction.
@@ -24,10 +24,19 @@ defmodule BsvRpc.Transaction do
           size: non_neg_integer()
         }
 
-  @spec create(binary) :: __MODULE__.t()
+  @doc """
+  Creates a transaction from a binary blob.
+
+  ## Examples
+
+    iex> tx = "01000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF4D04FFFF001D0104455468652054696D65732030332F4A616E2F32303039204368616E63656C6C6F72206F6E206272696E6B206F66207365636F6E64206261696C6F757420666F722062616E6B73FFFFFFFF0100F2052A01000000434104678AFDB0FE5548271967F1A67130B7105CD6A828E03909A67962E0EA1F61DEB649F6BC3F4CEF38C4F35504E51EC112DE5C384DF7BA0B8D578A4C702B6BF11D5FAC00000000"
+    iex> t = BsvRpc.Transaction.create(Base.decode16!(tx))
+    iex> t.size
+    204
+    iex> Base.encode16(t.hash)
+    "4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"
+  """
   def create(tx_blob) do
-    hash = BsvRpc.Helpers.double_sha256(tx_blob)
-    size = byte_size(tx_blob)
     <<version::little-size(32), rest::binary>> = tx_blob
 
     {num_inputs, rest} = BsvRpc.Helpers.get_varint(rest)
@@ -36,13 +45,16 @@ defmodule BsvRpc.Transaction do
     {num_outputs, rest} = BsvRpc.Helpers.get_varint(rest)
     {outputs, <<locktime::little-size(32)>>} = BsvRpc.TransactionOutput.create(rest, num_outputs)
 
+    <<hash_big::size(256)>> = BsvRpc.Helpers.double_sha256(tx_blob)
+    hash_little = <<hash_big::integer-little-size(256)>>
+
     %__MODULE__{
-      hash: hash,
+      hash: hash_little,
       inputs: inputs,
       outputs: outputs,
       version: version,
       locktime: locktime,
-      size: size
+      size: byte_size(tx_blob)
     }
   end
 end
