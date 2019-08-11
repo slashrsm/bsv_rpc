@@ -35,7 +35,7 @@ defmodule BsvRpc.Helpers do
     {1, <<>>}
 
     iex> BsvRpc.Helpers.get_varint(<<0xFD, 0x80, 0x00, 0x12, 0x34>>)
-    {32768, <<0x12, 0x34>>}
+    {128, <<0x12, 0x34>>}
 
     iex> BsvRpc.Helpers.get_varint(<<0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0x00>>)
     {4294967295, <<0x00>>}
@@ -73,7 +73,7 @@ defmodule BsvRpc.Helpers do
     iex> BsvRpc.Helpers.get_varlen_data(<<0x01, 0xFF, 0xEE>>)
     {<<255>>, <<0xEE>>}
 
-    iex> BsvRpc.Helpers.get_varlen_data(<<0xFD, 0x00, 0x01, 0xEE, 0x34>>)
+    iex> BsvRpc.Helpers.get_varlen_data(<<0xFD, 0x01, 0x00, 0xEE, 0x34>>)
     {<<0xEE>>, <<0x34>>}
   """
   @spec get_varlen_data(binary) :: {binary, binary}
