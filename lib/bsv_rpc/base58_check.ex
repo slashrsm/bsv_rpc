@@ -32,7 +32,7 @@ defmodule BsvRpc.Base58Check do
       |> base58_decode(0)
       # From the node implementaiton
       # https://github.com/bitcoin-sv/bitcoin-sv/blob/f5503f0fe1a30db70b9a07b2a22e27468bf1b59a/src/base58.cpp#L37
-      |> num_to_bytes(round(String.length(str) * 733 / 1000), :big)
+      |> num_to_bytes(ceil(String.length(str) * 733 / 1000), :big)
 
     common =
       if count_leading_zero_bytes(common, 0) > 0 and

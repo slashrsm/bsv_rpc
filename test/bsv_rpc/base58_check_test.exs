@@ -26,7 +26,7 @@ defmodule BsvRpc.Base58CheckTest do
     {"461QQ2sYWxU7H2PV4oBwJGNch8XVTYYbZxU", MatchError},
     {"cSNjAsnhgtiFMi6MtfvgscMB2Cbhn2v1FUYfviJ1CdjfidvmeW6mn", MatchError},
     {"gmsow2Y6EWAFDFE1CE4Hd3Tpu2BvfmBfG1SXsuRARbnt1WjkZnFh1qGTiptWWbjsq2Q6qvpgJVj", MatchError},
-    {"nbuzhfwMoNzA3PaFnyLcRxE9bTJPDkjZ6Rf6Y6o2ckXZfzZzXBT", ArgumentError},
+    {"nbuzhfwMoNzA3PaFnyLcRxE9bTJPDkjZ6Rf6Y6o2ckXZfzZzXBT", MatchError},
     {"Ky1YjoZNgQ196HJV3HpdkecfhRBmRZdMJk89Hi5KGfpfPwS2bUbfd", MatchError}
   ]
 

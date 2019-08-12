@@ -16,6 +16,13 @@ defmodule BsvRpc.AddressTest do
     assert "1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i" == a
     assert :pubkey == t
     assert :mainnet == n
+
+    %BsvRpc.Address{address: a, network: n, type: t} =
+      BsvRpc.Address.create!("1bZvgiGjXVYUPo3YYexM7GRGhjGErTHjk")
+
+    assert "1bZvgiGjXVYUPo3YYexM7GRGhjGErTHjk" == a
+    assert :pubkey == t
+    assert :mainnet == n
   end
 
   test "testnet pubkey address" do
