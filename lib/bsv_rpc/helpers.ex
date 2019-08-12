@@ -4,6 +4,11 @@ defmodule BsvRpc.Helpers do
   Various helper functions.
   """
 
+  @op_dup 0x76
+  @op_hash160 0xA9
+  @op_equalverify 0x88
+  @op_checksig 0xAC
+
   @doc """
   Gets the double sha256 hash of the input data.
 
@@ -101,11 +106,28 @@ defmodule BsvRpc.Helpers do
   """
   @spec get_varlen_data(binary) :: {binary, binary}
   def get_varlen_data(data) do
-    # IO.inspect(data)
     {len, data} = get_varint(data)
-    # IO.inspect len
-    # IO.inspect data
     <<data::binary-size(len), rest::binary>> = data
     {data, rest}
+  end
+
+  @doc """
+  Gets the script pubKey to pay to the address.
+
+  ## Examples
+
+    iex> {:ok, a} = BsvRpc.Address.create("1KqbPy3xFdHuL6gmWLgzhVz1tUMUgY5xWe")
+    iex> BsvRpc.Helpers.p2pkh_script_pubkey(a) |> Base.encode16()
+    "76A914CEA2F14D4ADB6CCDD185BA6BA45DF49597E409C488AC"
+  """
+  @spec p2pkh_script_pubkey(%BsvRpc.Address{}) :: binary
+  def p2pkh_script_pubkey(address) do
+    hash = BsvRpc.Address.hash160(address)
+    hash_len = byte_size(hash)
+
+    <<@op_dup, @op_hash160>> <>
+      <<hash_len::size(8)>> <>
+      hash <>
+      <<@op_equalverify, @op_checksig>>
   end
 end
