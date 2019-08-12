@@ -4,7 +4,7 @@ defmodule BsvRpc.Transaction do
   Functions for Bitcoin transaction manipulation.
   """
 
-  @enforce_keys [:hash, :inputs, :outputs, :version, :locktime, :size]
+  @enforce_keys [:inputs, :outputs, :version, :locktime]
 
   @typedoc """
   A Bitcoin transaction.
