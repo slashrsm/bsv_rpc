@@ -173,7 +173,7 @@ defmodule BsvRpc do
   """
   @spec sign_transaction(%BsvRpc.Transaction{}) :: %BsvRpc.Transaction{}
   def sign_transaction(transaction) do
-    %{"hex" => signed_tx, "completed" => true} =
+    %{"hex" => signed_tx, "complete" => true} =
       GenServer.call(
         BsvRpc,
         {:call_endpoint, "signrawtransaction", [BsvRpc.Transaction.to_hex(transaction)]}
