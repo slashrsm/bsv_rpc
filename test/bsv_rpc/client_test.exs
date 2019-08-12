@@ -79,7 +79,7 @@ defmodule BsvRpc.ClientTest do
     assert called(
              HTTPoison.post(
                "http://host:12345",
-               "{\"params\":[1,\"foo\",false,\"{\\\"bar\\\":\\\"baz\\\"}\"],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
+               "{\"params\":[1,\"foo\",false,{\"bar\":\"baz\"}],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
                [{"Content-Type", "text/plain"}],
                hackney: [basic_auth: {"username", "password"}]
              )

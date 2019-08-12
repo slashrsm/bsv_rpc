@@ -38,14 +38,7 @@ defmodule BsvRpc.Client do
           "jsonrpc" => "1.0",
           "id" => "bsv_rpc",
           "method" => method,
-          "params" =>
-            Enum.map(params, fn p ->
-              if is_number(p) or is_atom(p) or is_bitstring(p) or is_boolean(p) do
-                p
-              else
-                Poison.encode!(p)
-              end
-            end)
+          "params" => params
         }),
         [{"Content-Type", "text/plain"}],
         hackney: [basic_auth: {state.username, state.password}]
