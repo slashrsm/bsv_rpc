@@ -63,13 +63,15 @@ defmodule BsvRpc.Transaction do
   """
   @spec to_binary(__MODULE__.t()) :: binary
   def to_binary(transaction) do
-    inputs = transaction.inputs
-    |> Enum.map(fn input -> BsvRpc.TransactionInput.to_binary(input) end)
-    |> Enum.reduce(fn input, acc -> acc <> input end)
+    inputs =
+      transaction.inputs
+      |> Enum.map(fn input -> BsvRpc.TransactionInput.to_binary(input) end)
+      |> Enum.reduce(fn input, acc -> acc <> input end)
 
-    outputs = transaction.outputs
-    |> Enum.map(fn output -> BsvRpc.TransactionOutput.to_binary(output) end)
-    |> Enum.reduce(fn output, acc -> acc <> output end)
+    outputs =
+      transaction.outputs
+      |> Enum.map(fn output -> BsvRpc.TransactionOutput.to_binary(output) end)
+      |> Enum.reduce(fn output, acc -> acc <> output end)
 
     <<transaction.version::little-size(32)>> <>
       BsvRpc.Helpers.to_varint(length(transaction.inputs)) <>

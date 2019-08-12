@@ -133,4 +133,14 @@ defmodule BsvRpc do
     GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [""]})
     |> Enum.map(fn address -> BsvRpc.Address.create!(address) end)
   end
+
+  @doc ~S"""
+  Gets a transaction.
+  """
+  @spec get_transaction(String.t()) :: %BsvRpc.Transaction{}
+  def get_transaction(hash) do
+    GenServer.call(BsvRpc, {:call_endpoint, "getrawtransaction", [hash]})
+    |> Base.decode16!(case: :lower)
+    |> BsvRpc.Transaction.create()
+  end
 end

@@ -101,7 +101,10 @@ defmodule BsvRpc.Helpers do
   """
   @spec get_varlen_data(binary) :: {binary, binary}
   def get_varlen_data(data) do
+    # IO.inspect(data)
     {len, data} = get_varint(data)
+    # IO.inspect len
+    # IO.inspect data
     <<data::binary-size(len), rest::binary>> = data
     {data, rest}
   end

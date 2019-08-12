@@ -179,4 +179,27 @@ defmodule BsvRpcTest do
 
     assert called(GenServer.call(BsvRpc, {:call_endpoint, "getaddressesbyaccount", [""]}))
   end
+
+  test_with_mock "genserver is called for get_transaction", _context, GenServer, [],
+    call: fn _module, _context ->
+      "010000000114f6e0a8242018cefa4236493377023331e5ab4e981729557a8aac33a58ad372010000006a47304402202c2605d54ca2fcaba8a75456bea39c2b2d7ae744f562d06990a449e5f5a3febe02200bd37b90da97d0e69ed2b3f91d82e5d4344564cf5b699ad1ad7f232888c815fc4121037328f4fa4f446697a5984f9173928d5ae5a64ccd58576f3c73e4c794ca759eccffffffff02e06735000000000017a914690f0f15d469ec9d6e7f4346d76fe94abac28037872d9fe604000000001976a914f249783130cc20934267803db3c037a21ff9e2dd88ac00000000"
+    end do
+    t = BsvRpc.get_transaction("2de56313f760c3a81cfbac22e7cc34958c2a7a8d6c739aa8861f65e42692669d")
+    assert 223 == t.size
+    assert 1 == t.version
+    assert 0 == t.locktime
+    assert 1 == length(t.inputs)
+    assert 2 == length(t.outputs)
+
+    assert "2DE56313F760C3A81CFBAC22E7CC34958C2A7A8D6C739AA8861F65E42692669D" ==
+             Base.encode16(t.hash)
+
+    assert called(
+             GenServer.call(
+               BsvRpc,
+               {:call_endpoint, "getrawtransaction",
+                ["2de56313f760c3a81cfbac22e7cc34958c2a7a8d6c739aa8861f65e42692669d"]}
+             )
+           )
+  end
 end
