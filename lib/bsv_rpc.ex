@@ -167,4 +167,29 @@ defmodule BsvRpc do
        [min_confirmations, max_confirmations, Enum.map(addresses, & &1.address), include_unsafe]}
     )
   end
+
+  @doc """
+  Signs a transaction and returns the signed transaction.
+  """
+  @spec sign_transaction(%BsvRpc.Transaction{}) :: %BsvRpc.Transaction{}
+  def sign_transaction(transaction) do
+    %{"hex" => signed_tx, "completed" => true} =
+      GenServer.call(
+        BsvRpc,
+        {:call_endpoint, "signrawtransaction", [BsvRpc.Transaction.to_hex(transaction)]}
+      )
+
+    Base.decode16!(signed_tx, case: :mixed) |> BsvRpc.Transaction.create()
+  end
+
+  @doc """
+  Broadcasts a signed transaction to the network.
+  """
+  @spec broadcast_transaction(BsvRpc.Transaction.t()) :: String.t()
+  def broadcast_transaction(transaction) do
+    GenServer.call(
+      BsvRpc,
+      {:call_endpoint, "sendrawtransaction", [BsvRpc.Transaction.to_hex(transaction)]}
+    )
+  end
 end
