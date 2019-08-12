@@ -202,4 +202,97 @@ defmodule BsvRpcTest do
              )
            )
   end
+
+  test_with_mock "genserver is called for list_unspent", _context, GenServer, [],
+    call: fn _module, _context ->
+      [
+        %{
+          "account" => "",
+          "address" => "1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7",
+          "amount" => 0.00156566,
+          "confirmations" => 4,
+          "safe" => true,
+          "scriptPubKey" => "76a914d46eb52cd93941988969f86cb6fcef8b99db103888ac",
+          "solvable" => true,
+          "spendable" => true,
+          "txid" => "b2e068edb272ebfee3306e45f2d2a941e720a3ae884914e3cf5edc49542cdc30",
+          "vout" => 1
+        }
+      ]
+    end do
+    [utxo | rest] =
+      BsvRpc.list_unspent(
+        [BsvRpc.Address.create!("1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7")],
+        1,
+        50,
+        false
+      )
+
+    assert [] == rest
+
+    assert %{
+             "account" => "",
+             "address" => "1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7",
+             "amount" => 0.00156566,
+             "confirmations" => 4,
+             "safe" => true,
+             "scriptPubKey" => "76a914d46eb52cd93941988969f86cb6fcef8b99db103888ac",
+             "solvable" => true,
+             "spendable" => true,
+             "txid" => "b2e068edb272ebfee3306e45f2d2a941e720a3ae884914e3cf5edc49542cdc30",
+             "vout" => 1
+           } == utxo
+
+    assert called(
+             GenServer.call(
+               BsvRpc,
+               {:call_endpoint, "listunspent",
+                [1, 50, ["1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7"], false]}
+             )
+           )
+  end
+
+  test_with_mock "default params for list_unspent", _context, GenServer, [],
+    call: fn _module, _context ->
+      [
+        %{
+          "account" => "",
+          "address" => "1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7",
+          "amount" => 0.00156566,
+          "confirmations" => 4,
+          "safe" => true,
+          "scriptPubKey" => "76a914d46eb52cd93941988969f86cb6fcef8b99db103888ac",
+          "solvable" => true,
+          "spendable" => true,
+          "txid" => "b2e068edb272ebfee3306e45f2d2a941e720a3ae884914e3cf5edc49542cdc30",
+          "vout" => 1
+        }
+      ]
+    end do
+    [utxo | rest] =
+      BsvRpc.list_unspent([BsvRpc.Address.create!("1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7")])
+
+    assert [] == rest
+
+    assert %{
+             "account" => "",
+             "address" => "1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7",
+             "amount" => 0.00156566,
+             "confirmations" => 4,
+             "safe" => true,
+             "scriptPubKey" => "76a914d46eb52cd93941988969f86cb6fcef8b99db103888ac",
+             "solvable" => true,
+             "spendable" => true,
+             "txid" => "b2e068edb272ebfee3306e45f2d2a941e720a3ae884914e3cf5edc49542cdc30",
+             "vout" => 1
+           } == utxo
+
+    assert called(
+             GenServer.call(
+               BsvRpc,
+               {:call_endpoint, "listunspent",
+                [1, 9_999_999, ["1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7"], true]}
+             )
+           )
+  end
 end

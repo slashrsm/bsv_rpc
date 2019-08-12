@@ -143,4 +143,28 @@ defmodule BsvRpc do
     |> Base.decode16!(case: :lower)
     |> BsvRpc.Transaction.create()
   end
+
+  @doc """
+  Lists unspent transaction outputs (UTXOs) for addresses.
+
+  ## Arguments
+
+    - `addresses` - List of addresses to get UTXOs for.
+    - `min_confirmations` - Optional number of minimum confirmations (default: 1).
+    - `max_confirmations` - Optional number of maximum confirmations (default: 9_999_999).
+    - `include_unsafe` - Optional flag to include/exclude unsafe UTXOs (default: true).
+  """
+  @spec list_unspent([%BsvRpc.Address{}], non_neg_integer, non_neg_integer, bool) :: map()
+  def list_unspent(
+        addresses,
+        min_confirmations \\ 1,
+        max_confirmations \\ 9_999_999,
+        include_unsafe \\ true
+      ) do
+    GenServer.call(
+      BsvRpc,
+      {:call_endpoint, "listunspent",
+       [min_confirmations, max_confirmations, Enum.map(addresses, & &1.address), include_unsafe]}
+    )
+  end
 end
