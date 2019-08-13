@@ -6,12 +6,18 @@ elixir:
 otp_release:
   - 22.0.7
 
-sudo: false
+cache:
+  directories:
+    - _build
+    - deps
 
 install:
   - mix local.hex --force
   - mix local.rebar --force
   - mix deps.get
+
+before_script:
+  - travis_wait mix dialyzer --plt
 
 script:
   - mix check
