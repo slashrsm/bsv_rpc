@@ -22,4 +22,4 @@ before_script:
 
 script:
   - mix check
-  - MIX_ENV=test mix coveralls.travis
+#  - MIX_ENV=test mix coveralls.travis
