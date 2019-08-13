@@ -17,7 +17,7 @@ install:
   - mix deps.get
 
 before_script:
-  - mkdir priv
+  - mkdir -p priv/plts
   - travis_wait mix dialyzer --plt
 
 script:
