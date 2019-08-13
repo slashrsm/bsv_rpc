@@ -9,7 +9,7 @@ defmodule BsvRpc.Client do
   ###
   # GenServer API
   ###
-  @spec start_link(any, any, any, any) :: :ignore | {:error, any} | {:ok, pid}
+  @spec start_link(String.t(), String.t(), String.t(), non_neg_integer()) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(username, password, host \\ "localhost", port \\ 8332) do
     GenServer.start_link(
       __MODULE__,
