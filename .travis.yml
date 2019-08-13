@@ -8,6 +8,9 @@ otp_release:
 
 sudo: false
 
+env:
+  - MIX_ENV=test
+
 install:
   - mix local.hex --force
   - mix local.rebar --force
@@ -15,3 +18,4 @@ install:
 
 script:
   - mix check
+  - mix coveralls.travis

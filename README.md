@@ -1,6 +1,7 @@
 # Bitcoin SV JSON-RPC client
 
 [![Build Status](https://travis-ci.org/slashrsm/bsv_rpc.svg?branch=master)](https://travis-ci.org/slashrsm/bsv_rpc)
+[![Coverage Status](https://coveralls.io/repos/slashrsm/bsv_rpc/badge.svg?branch=master)](https://coveralls.io/r/slashrsm/bsv_rpc?branch=master)
 [![Inline docs](http://inch-ci.org/github/slashrsm/bsv_rpc.svg)](http://hexdocs.pm/bsv_rpc/)
 [![Hex Version](http://img.shields.io/hexpm/v/bsv_rpc.svg?style=flat)](https://hex.pm/packages/bsv_rpc)
 
