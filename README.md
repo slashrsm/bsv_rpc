@@ -1,5 +1,7 @@
 # Bitcoin SV JSON-RPC client
 
+[![Build Status](https://travis-ci.org/slashrsm/bsv_rpc.svg?branch=master)](https://travis-ci.org/slashrsm/bsv_rpc)
+
 A client library to talk to the JSON-RPC endpoint on a Bitcoin node. 
 
 **Warning:** Library is under active development and will most likely keep changing in the foreseeable future. 
@@ -26,7 +28,7 @@ with any other implementation than Bitcoin SV.
 
 In order to use the JSON-RPC client feature add `:bsv_rpc` to your applications:
 
-```
+```elixir
 def application do
   [applications: [:bsv_rpc]]
 end
@@ -34,7 +36,7 @@ end
 
 and add Bitcoin node connection configuration:
 
-```
+```elixir
 config :bsv_rpc, :node,
   hostname: "localhost",
   port: 8332,
@@ -45,7 +47,7 @@ config :bsv_rpc, :node,
 
 Alternatively you can run the client's `GenServer` process manually:
 
-```
+```elixir
 {:ok, pid} = BsvRpc.Client.start_link("someusername", "somepass", "localhost", 8332)
 ```
 
