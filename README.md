@@ -1,6 +1,8 @@
 # Bitcoin SV JSON-RPC client
 
 [![Build Status](https://travis-ci.org/slashrsm/bsv_rpc.svg?branch=master)](https://travis-ci.org/slashrsm/bsv_rpc)
+[![Inline docs](http://inch-ci.org/github/slashrsm/bsv_rpc.svg)](http://hexdocs.pm/bsv_rpc/)
+[![Hex Version](http://img.shields.io/hexpm/v/bsv_rpc.svg?style=flat)](https://hex.pm/packages/bsv_rpc)
 
 A client library to talk to the JSON-RPC endpoint on a Bitcoin node. 
 
