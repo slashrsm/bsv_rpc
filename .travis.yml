@@ -10,6 +10,7 @@ cache:
   directories:
     - _build
     - deps
+    - priv
 
 install:
   - mix local.hex --force
