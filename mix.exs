@@ -8,7 +8,7 @@ defmodule BsvRpc.MixProject do
   def project do
     [
       app: :bsv_rpc,
-      version: "0.1.0",
+      version: "1.0.0-alpha1",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       source_url: "https://github.com/slashrsm/bsv_rpc",
