@@ -154,7 +154,9 @@ defmodule BsvRpc do
     - `max_confirmations` - Optional number of maximum confirmations (default: 9_999_999).
     - `include_unsafe` - Optional flag to include/exclude unsafe UTXOs (default: true).
   """
-  @spec list_unspent([%BsvRpc.Address{}], non_neg_integer, non_neg_integer, bool) :: map()
+  @spec list_unspent([%BsvRpc.Address{}], non_neg_integer, non_neg_integer, bool) :: [
+          %BsvRpc.UTXO{}
+        ]
   def list_unspent(
         addresses,
         min_confirmations \\ 1,
@@ -166,6 +168,13 @@ defmodule BsvRpc do
       {:call_endpoint, "listunspent",
        [min_confirmations, max_confirmations, Enum.map(addresses, & &1.address), include_unsafe]}
     )
+    |> Enum.map(fn utxo ->
+      %BsvRpc.UTXO{
+        value: round(utxo["amount"] * 100_000_000_000),
+        transaction: Base.decode16!(utxo["txid"], case: :mixed),
+        output: utxo["vout"]
+      }
+    end)
   end
 
   @doc """

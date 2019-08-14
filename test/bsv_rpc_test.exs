@@ -230,17 +230,11 @@ defmodule BsvRpcTest do
 
     assert [] == rest
 
-    assert %{
-             "account" => "",
-             "address" => "1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7",
-             "amount" => 0.00156566,
-             "confirmations" => 4,
-             "safe" => true,
-             "scriptPubKey" => "76a914d46eb52cd93941988969f86cb6fcef8b99db103888ac",
-             "solvable" => true,
-             "spendable" => true,
-             "txid" => "b2e068edb272ebfee3306e45f2d2a941e720a3ae884914e3cf5edc49542cdc30",
-             "vout" => 1
+    assert %BsvRpc.UTXO{
+             value: 156_566_000,
+             transaction:
+               Base.decode16!("B2E068EDB272EBFEE3306E45F2D2A941E720A3AE884914E3CF5EDC49542CDC30"),
+             output: 1
            } == utxo
 
     assert called(
@@ -274,17 +268,11 @@ defmodule BsvRpcTest do
 
     assert [] == rest
 
-    assert %{
-             "account" => "",
-             "address" => "1LNEsmx2nr4jtsZqWSpuGBUXngadosczf7",
-             "amount" => 0.00156566,
-             "confirmations" => 4,
-             "safe" => true,
-             "scriptPubKey" => "76a914d46eb52cd93941988969f86cb6fcef8b99db103888ac",
-             "solvable" => true,
-             "spendable" => true,
-             "txid" => "b2e068edb272ebfee3306e45f2d2a941e720a3ae884914e3cf5edc49542cdc30",
-             "vout" => 1
+    assert %BsvRpc.UTXO{
+             value: 156_566_000,
+             transaction:
+               Base.decode16!("B2E068EDB272EBFEE3306E45F2D2A941E720A3AE884914E3CF5EDC49542CDC30"),
+             output: 1
            } == utxo
 
     assert called(
