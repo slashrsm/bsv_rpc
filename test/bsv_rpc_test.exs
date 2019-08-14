@@ -231,7 +231,7 @@ defmodule BsvRpcTest do
     assert [] == rest
 
     assert %BsvRpc.UTXO{
-             value: 156_566_000,
+             value: 156_566,
              transaction:
                Base.decode16!("B2E068EDB272EBFEE3306E45F2D2A941E720A3AE884914E3CF5EDC49542CDC30"),
              output: 1
@@ -269,7 +269,7 @@ defmodule BsvRpcTest do
     assert [] == rest
 
     assert %BsvRpc.UTXO{
-             value: 156_566_000,
+             value: 156_566,
              transaction:
                Base.decode16!("B2E068EDB272EBFEE3306E45F2D2A941E720A3AE884914E3CF5EDC49542CDC30"),
              output: 1

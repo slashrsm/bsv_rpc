@@ -36,6 +36,7 @@ defmodule BsvRpc.Transaction do
     iex> Base.encode16(t.hash)
     "4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"
   """
+  @spec create(binary) :: %__MODULE__{}
   def create(tx_blob) do
     <<version::little-size(32), rest::binary>> = tx_blob
 
@@ -106,4 +107,134 @@ defmodule BsvRpc.Transaction do
   """
   @spec id(__MODULE__.t()) :: String.t()
   def id(transaction), do: Base.encode16(transaction.hash)
+
+  @doc """
+  Generates a P2PKH transaction to send funds to a single address.
+
+  ## Arguments
+
+    - `to_address` - Address to send funds to.
+    - `amount` - Amount in satoshis.
+    - `utxos` - List of unspent transaction outputs to consume.
+    - `change_address` - Address to send change to.
+    - `sat_per_byte` - (Optional) fee in satoshi per byte (dafault: 1).
+
+  ## Examples
+
+    iex> {:ok, to} = BsvRpc.Address.create("1wBQpttZsiMtrwgjp2NuGNEyBMPdnzCeA")
+    iex> {:ok, change} = BsvRpc.Address.create("18v4ZTwZAkk7HKECkfutns1bfGVehaXNkW")
+    iex> utxos = [%BsvRpc.UTXO{transaction: Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"), output: 0, value: 5_000_000_000}]
+    iex> BsvRpc.Transaction.send_to(to, 4_000_000_000, utxos, change)
+    {:ok, %BsvRpc.Transaction{
+      block: nil,
+      confirmations: nil,
+      hash: nil,
+      inputs: [
+        %BsvRpc.TransactionInput{
+          previous_output: 0,
+          previous_transaction: <<74, 94, 30, 75, 170, 184, 159, 58, 50, 81, 138,
+            136, 195, 27, 200, 127, 97, 143, 118, 103, 62, 44, 199, 122, 178, 18,
+            123, 122, 253, 237, 163, 59>>,
+          script_sig: "",
+          sequence: 4294967295
+        }
+      ],
+      locktime: 0,
+      outputs: [
+        %BsvRpc.TransactionOutput{
+          script_pubkey: <<118, 169, 20, 10, 63, 39, 5, 95, 134, 238, 22, 182, 35,
+            80, 229, 135, 46, 13, 197, 9, 176, 72, 193, 136, 172>>,
+          value: 4000000000
+        },
+        %BsvRpc.TransactionOutput{
+          script_pubkey: <<118, 169, 20, 86, 209, 229, 225, 200, 165, 160, 64, 184,
+            37, 55, 2, 13, 124, 118, 184, 15, 15, 111, 242, 136, 172>>,
+          value: 999999772
+        }
+      ],
+      size: nil,
+      time: nil,
+      version: 1
+    }}
+    iex> BsvRpc.Transaction.send_to(to, 5_000_000_000, utxos, change)
+    {:error, "Insufficient funds."}
+  """
+  @spec send_to(
+          %BsvRpc.Address{},
+          non_neg_integer(),
+          [%BsvRpc.UTXO{}],
+          %BsvRpc.Address{}
+        ) :: {:ok, %__MODULE__{}} | {:error, String.t()}
+  def send_to(to_address, amount, utxos, change_address, sat_per_byte \\ 1) do
+    total_value = Enum.reduce(utxos, 0, fn utxo, acc -> acc + utxo.value end)
+    # TX out is about 35 bytes and TX in is about 150.
+    # Make this smarter at some point...
+    fee = (8 + 2 * 35 + Enum.count(utxos) * 150) * sat_per_byte
+    change = total_value - amount - fee
+
+    inputs =
+      Enum.map(utxos, fn utxo ->
+        %BsvRpc.TransactionInput{
+          previous_transaction: utxo.transaction,
+          previous_output: utxo.output,
+          script_sig: <<>>,
+          sequence: 0xFFFFFFFF
+        }
+      end)
+
+    cond do
+      change < 0 ->
+        {:error, "Insufficient funds."}
+
+      change < 100 ->
+        {:ok,
+         %__MODULE__{
+           version: 1,
+           locktime: 0,
+           inputs: inputs,
+           outputs: [
+             %BsvRpc.TransactionOutput{
+               value: amount,
+               script_pubkey: BsvRpc.TransactionOutput.p2pkh_script_pubkey(to_address)
+             }
+           ]
+         }}
+
+      true ->
+        {:ok,
+         %__MODULE__{
+           version: 1,
+           locktime: 0,
+           inputs: inputs,
+           outputs: [
+             %BsvRpc.TransactionOutput{
+               value: amount,
+               script_pubkey: BsvRpc.TransactionOutput.p2pkh_script_pubkey(to_address)
+             },
+             %BsvRpc.TransactionOutput{
+               value: total_value - amount - fee,
+               script_pubkey: BsvRpc.TransactionOutput.p2pkh_script_pubkey(change_address)
+             }
+           ]
+         }}
+    end
+  end
+
+  @doc """
+  Gets the network fee of the transaction.
+  """
+  @spec fee(__MODULE__.t()) :: non_neg_integer
+  def fee(transaction) do
+    out_value = Enum.reduce(transaction.outputs, 0, fn out, acc -> out.value + acc end)
+
+    in_value =
+      transaction.inputs
+      |> Enum.map(fn input ->
+        BsvRpc.get_transaction(Base.encode16(input.previous_transaction)).outputs
+        |> Enum.at(input.previous_output)
+      end)
+      |> Enum.reduce(0, fn output, acc -> acc + output.value end)
+
+    in_value - out_value
+  end
 end

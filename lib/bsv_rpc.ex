@@ -170,7 +170,7 @@ defmodule BsvRpc do
     )
     |> Enum.map(fn utxo ->
       %BsvRpc.UTXO{
-        value: round(utxo["amount"] * 100_000_000_000),
+        value: round(utxo["amount"] * 100_000_000),
         transaction: Base.decode16!(utxo["txid"], case: :mixed),
         output: utxo["vout"]
       }
