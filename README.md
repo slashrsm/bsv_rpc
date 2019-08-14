@@ -19,8 +19,9 @@ with any other implementation than Bitcoin SV.
   * Transaction inputs
   * Transaction outputs
   * Addresses
+  * Unspent transation outputs (UTXOs)
   * Blocks (TODO)
-  * Scripts
+  * Scripts (TODO)
 * Base58Check API
 * Various helper functions 
   * P2PKH transaction generation
