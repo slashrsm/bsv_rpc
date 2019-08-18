@@ -139,9 +139,15 @@ defmodule BsvRpc do
   """
   @spec get_transaction(String.t()) :: %BsvRpc.Transaction{}
   def get_transaction(hash) do
-    GenServer.call(BsvRpc, {:call_endpoint, "getrawtransaction", [hash]})
-    |> Base.decode16!(case: :lower)
-    |> BsvRpc.Transaction.create()
+    case GenServer.call(BsvRpc, {:call_endpoint, "getrawtransaction", [hash]}) do
+      :error ->
+        :error
+
+      response ->
+        response
+        |> Base.decode16!(case: :lower)
+        |> BsvRpc.Transaction.create()
+    end
   end
 
   @doc """

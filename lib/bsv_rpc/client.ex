@@ -32,7 +32,7 @@ defmodule BsvRpc.Client do
   Sends JSON-RPC message.
   """
   def handle_call({:call_endpoint, method, params}, _from, state) do
-    {:ok, %HTTPoison.Response{status_code: 200, body: body}} =
+    response =
       post(
         "http://#{state.host}:#{state.port}",
         Poison.encode!(%{
@@ -45,9 +45,14 @@ defmodule BsvRpc.Client do
         hackney: [basic_auth: {state.username, state.password}]
       )
 
-    {:ok, %{"error" => nil, "id" => "bsv_rpc", "result" => result}} = Poison.decode(body)
+    case response do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        {:ok, %{"error" => nil, "id" => "bsv_rpc", "result" => result}} = Poison.decode(body)
+        {:reply, result, state}
 
-    {:reply, result, state}
+      _ ->
+        {:reply, :error, state}
+    end
   end
 
   def handle_call({:call_endpoint, method}, from, state) do
