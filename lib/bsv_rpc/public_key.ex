@@ -77,7 +77,7 @@ defmodule BsvRpc.PublicKey do
       }
     }
 
-    iex> private_key = BsvRpc.PrivateKey.create(<<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>, :mainnet)
+    iex> {:ok, private_key} = BsvRpc.PrivateKey.create(<<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>, :mainnet)
     iex> BsvRpc.PublicKey.create(private_key)
     {:ok,
       %BsvRpc.PublicKey{
@@ -133,7 +133,7 @@ defmodule BsvRpc.PublicKey do
         create(decoded_key)
 
       :error ->
-        {:error, "Could not decode private key."}
+        {:error, "Could not decode public key."}
     end
   end
 end

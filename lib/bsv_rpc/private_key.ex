@@ -5,10 +5,13 @@ defmodule BsvRpc.PrivateKey do
 
   A private key struct can be created using `BsvRpc.PrivateKey.create/2`:
 
-    iex> BsvRpc.PrivateKey.create(<<18, 178, 65, 32, 134, 45, 30, 1, 67, 228, 110, 223, 142, 202, 105, 135>>, :mainnet)
-    %BsvRpc.PrivateKey{
-      key: <<18, 178, 65, 32, 134, 45, 30, 1, 67, 228, 110, 223, 142, 202, 105, 135>>,
-      network: :mainnet,
+    iex> BsvRpc.PrivateKey.create(<<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>, :mainnet)
+    {:ok,
+      %BsvRpc.PrivateKey{
+        key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56,
+          93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
+        network: :mainnet,
+      }
     }
 
   or from a HD extended key using `BsvRpc.PrivateKey.create/1`:
@@ -17,10 +20,12 @@ defmodule BsvRpc.PrivateKey do
     iex> seed = Mnemonic.to_seed(words, "", :english)
     iex> master = ExtendedKey.master(seed)
     iex> BsvRpc.PrivateKey.create(master)
-    %BsvRpc.PrivateKey{
-      key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12,
-        228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
-      network: :mainnet,
+    {:ok,
+      %BsvRpc.PrivateKey{
+        key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12,
+          228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
+        network: :mainnet,
+      }
     }
   """
 
@@ -32,7 +37,7 @@ defmodule BsvRpc.PrivateKey do
   defstruct [:key, :network]
 
   @type t :: %__MODULE__{
-          key: <<>>,
+          key: binary,
           network: :mainnet | :testnet
         }
 
@@ -40,32 +45,45 @@ defmodule BsvRpc.PrivateKey do
   Creates a private key.
 
   ## Examples
-    iex> BsvRpc.PrivateKey.create(<<18, 178, 65, 32, 134, 45, 30, 1, 67, 228, 110, 223, 142, 202, 105, 135>>, :mainnet)
-    %BsvRpc.PrivateKey{
-      key: <<18, 178, 65, 32, 134, 45, 30, 1, 67, 228, 110, 223, 142, 202, 105, 135>>,
-      network: :mainnet,
+    iex> BsvRpc.PrivateKey.create(<<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>, :mainnet)
+    {:ok,
+      %BsvRpc.PrivateKey{
+        key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56,
+          93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
+        network: :mainnet,
+      }
     }
 
-    iex> BsvRpc.PrivateKey.create("12B24120862D1E0143E46EDF8ECA6987", :mainnet)
-    %BsvRpc.PrivateKey{
-      key: <<18, 178, 65, 32, 134, 45, 30, 1, 67, 228, 110, 223, 142, 202, 105, 135>>,
-      network: :mainnet,
+    iex> BsvRpc.PrivateKey.create("C827815BB4A66A604B91E54F6B2674F0385D0CE43FFE80D3369CB5CD15BD0198", :mainnet)
+    {:ok,
+      %BsvRpc.PrivateKey{
+        key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56,
+          93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
+        network: :mainnet,
+      }
     }
   """
-  @spec create(binary, :mainnet | :testnet) :: __MODULE__.t()
+  @spec create(binary, :mainnet | :testnet) :: {:ok, __MODULE__.t()} | {:error, String.t()}
   def create(key, network) when is_binary(key) do
-    case Base.decode16(key, case: :mixed) do
-      {:ok, decoded_key} ->
-        %__MODULE__{
-          key: decoded_key,
-          network: network
-        }
+    key =
+      case Base.decode16(key, case: :mixed) do
+        {:ok, decoded_key} ->
+          %__MODULE__{
+            key: decoded_key,
+            network: network
+          }
 
-      :error ->
-        %__MODULE__{
-          key: key,
-          network: network
-        }
+        :error ->
+          %__MODULE__{
+            key: key,
+            network: network
+          }
+      end
+
+    if byte_size(key.key) == 32 do
+      {:ok, key}
+    else
+      {:error, "Private key must be 32 bytes."}
     end
   end
 
@@ -77,16 +95,19 @@ defmodule BsvRpc.PrivateKey do
     iex> seed = Mnemonic.to_seed(words, "", :english)
     iex> master = ExtendedKey.master(seed)
     iex> BsvRpc.PrivateKey.create(master)
-    %BsvRpc.PrivateKey{
-      key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12,
-        228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
-      network: :mainnet,
+    {:ok,
+      %BsvRpc.PrivateKey{
+        key: <<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12,
+          228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>,
+        network: :mainnet,
+      }
     }
   """
   def create(%ExtendedKey{} = key) do
-    %__MODULE__{
-      key: key.key,
-      network: ExtendedKey.network(key)
-    }
+    {:ok,
+     %__MODULE__{
+       key: key.key,
+       network: ExtendedKey.network(key)
+     }}
   end
 end

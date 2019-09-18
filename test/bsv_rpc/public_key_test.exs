@@ -33,4 +33,8 @@ defmodule BsvRpc.PublicKeyTest do
                  20, 246, 190, 33, 140, 15, 163, 84, 163, 65>>
            } == key
   end
+
+  test "unable to decode" do
+    assert {:error, "Could not decode public key."} == BsvRpc.PublicKey.create("foobarbaz")
+  end
 end
