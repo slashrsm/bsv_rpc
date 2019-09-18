@@ -49,7 +49,9 @@ defmodule BsvRpc.MixProject do
       {:excoveralls, "~> 0.10", only: :test},
       {:mock, "~> 0.3.3", only: :test},
       {:httpoison, "~> 1.5"},
-      {:poison, "~> 4.0"}
+      {:poison, "~> 4.0"},
+      {:mnemonic, "~> 0.1.0", hex: :mnemonic_ex},
+      {:extended_key, "~> 0.3.0"}
     ]
   end
 
