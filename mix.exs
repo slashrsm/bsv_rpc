@@ -50,6 +50,7 @@ defmodule BsvRpc.MixProject do
       {:mock, "~> 0.3.3", only: :test},
       {:httpoison, "~> 1.5"},
       {:poison, "~> 4.0"},
+      {:libsecp256k1, "~> 0.1.10"},
       {:mnemonic, "~> 0.1.0", hex: :mnemonic_ex},
       {:extended_key, "~> 0.3.0"}
     ]
