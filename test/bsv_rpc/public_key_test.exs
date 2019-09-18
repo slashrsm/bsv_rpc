@@ -37,4 +37,14 @@ defmodule BsvRpc.PublicKeyTest do
   test "unable to decode" do
     assert {:error, "Could not decode public key."} == BsvRpc.PublicKey.create("foobarbaz")
   end
+
+  test "from invalid private key" do
+    pk = %BsvRpc.PrivateKey{
+      key: <<18, 178, 65, 32, 134, 45, 30, 1, 67, 228, 110, 223, 142, 202, 105, 135>>,
+      network: :mainnet
+    }
+
+    assert {:error, "Unable to create public key: Private key size not 32 bytes"} ==
+             BsvRpc.PublicKey.create(pk)
+  end
 end
