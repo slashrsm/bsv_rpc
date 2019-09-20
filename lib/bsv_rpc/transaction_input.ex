@@ -86,11 +86,9 @@ defmodule BsvRpc.TransactionInput do
     {script_sig, <<sequence::little-size(32), rest::binary>>} =
       BsvRpc.Helpers.get_varlen_data(rest)
 
-    # We have to reverse the hash bytes in order to store it in little endian.
-    <<prev_tx_reversed::size(256)>> = prev_tx
-
     input = %__MODULE__{
-      previous_transaction: <<prev_tx_reversed::integer-little-size(256)>>,
+      # We have to reverse the hash bytes in order to store it in little endian.
+      previous_transaction: BsvRpc.Helpers.reverse_endianess(prev_tx),
       previous_output: prev_txout,
       script_sig: script_sig,
       sequence: sequence

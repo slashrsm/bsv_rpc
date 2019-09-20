@@ -121,4 +121,21 @@ defmodule BsvRpc.Helpers do
   def to_varlen_data(data) do
     BsvRpc.Helpers.to_varint(byte_size(data)) <> data
   end
+
+  @doc """
+  Converts endianess of a binary blob.
+
+  ## Examples
+
+    iex> BsvRpc.Helpers.reverse_endianess(<<0xff, 0xee, 0xdd, 0xcc>>)
+    <<0xcc, 0xdd, 0xee, 0xff>>
+
+    iex> BsvRpc.Helpers.reverse_endianess(<<0x00, 0x11, 0x22, 0x33>>)
+    <<0x33, 0x22, 0x11, 0x00>>
+  """
+  def reverse_endianess(data) do
+    len = byte_size(data) * 8
+    <<as_number::size(len)>> = data
+    <<as_number::integer-little-size(len)>>
+  end
 end
