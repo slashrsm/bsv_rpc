@@ -3,6 +3,7 @@ defmodule BsvRpc.TransactionInput do
   @moduledoc """
   Functions for Bitcoin transaction inputs manipulation.
   """
+  use Bitwise
 
   @enforce_keys [:script_sig, :sequence]
 
@@ -117,5 +118,38 @@ defmodule BsvRpc.TransactionInput do
       BsvRpc.Helpers.to_varint(byte_size(tx_in.script_sig)) <>
       tx_in.script_sig <>
       <<tx_in.sequence::little-size(32)>>
+  end
+
+  @spec sign(
+          BsvRpc.TransactionInput.t(),
+          BsvRpc.Transaction.t(),
+          BsvRpc.PrivateKey.t(),
+          BsvRpc.TransactionOutput.t() | nil,
+          BsvRpc.Sighash.t()
+        ) :: {:error, String.t()} | {:ok, BsvRpc.TransactionInput.t()}
+  def sign(
+        %__MODULE__{} = tx_in,
+        %BsvRpc.Transaction{} = tx,
+        %BsvRpc.PrivateKey{} = key,
+        utxo,
+        sigtype \\ [:sighash_all, :sighash_forkid]
+      ) do
+    # TODO Check if it is the correct key.
+    sighash = BsvRpc.Sighash.sighash(tx_in, tx, key, utxo, sigtype)
+
+    case :libsecp256k1.ecdsa_sign(sighash, key.key, :default, "") do
+      {:error, reason} ->
+        {:error, "Unable to sign: " <> to_string(reason)}
+
+      {:ok, signature} ->
+        {:ok, public_key} = BsvRpc.PublicKey.create(key)
+        {:ok, Map.put(tx_in, :script_sig, p2pkh_script_sig(signature, public_key, sigtype))}
+    end
+  end
+
+  @spec p2pkh_script_sig(binary, BsvRpc.PublicKey.t(), BsvRpc.Sighash.t()) :: binary
+  def p2pkh_script_sig(signature, %BsvRpc.PublicKey{} = public_key, sigtype) do
+    signature = signature <> <<BsvRpc.Sighash.get_sighash_suffix(sigtype)>>
+    BsvRpc.Helpers.to_varlen_data(signature) <> BsvRpc.Helpers.to_varlen_data(public_key.key)
   end
 end

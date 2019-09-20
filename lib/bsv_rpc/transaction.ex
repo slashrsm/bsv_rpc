@@ -3,6 +3,7 @@ defmodule BsvRpc.Transaction do
   @moduledoc """
   Functions for Bitcoin transaction manipulation.
   """
+  use Bitwise
 
   @enforce_keys [:inputs, :outputs, :version, :locktime]
 
@@ -253,5 +254,40 @@ defmodule BsvRpc.Transaction do
       |> Enum.reduce(0, fn output, acc -> acc + output.value end)
 
     in_value - out_value
+  end
+
+  @doc """
+  Signs a transaction using the private key.
+
+  ## Examples
+    iex> {:ok, k} = ExtendedKey.from_string("xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV")
+    ...>   |> BsvRpc.PrivateKey.create()
+    iex> tx = BsvRpc.Transaction.create_from_hex("0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000")
+    iex> utxo = %BsvRpc.TransactionOutput{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000}
+    iex> signed_tx = BsvRpc.Transaction.sign(tx, k, utxo)
+    iex> [input | []] = signed_tx.inputs
+    iex> Base.encode16(input.script_sig)
+    "4730440220758CB5A38A45687AC87F2637287D8F0214BB3F4455FA55CC66F37A8BD88BD62A022019B8AE768FC3ADAD1B99779E20CF747A9AD9EA339A8FAD24CB8DDFB196457E2741210342E0EB80C57799F22624264E5F7541400B996D3B38CFFFFC12EBDA7AC921DF2F"
+  """
+  @spec sign(
+          __MODULE__.t(),
+          BsvRpc.PrivateKey.t(),
+          BsvRpc.TransactionOutput.t() | nil,
+          BsvRpc.Sighash.t()
+        ) :: __MODULE__.t()
+  def sign(
+        %__MODULE__{} = tx,
+        %BsvRpc.PrivateKey{} = key,
+        utxo \\ nil,
+        sigtype \\ [:sighash_all, :sighash_forkid]
+      ) do
+    signed_inputs =
+      tx.inputs
+      |> Enum.map(fn tx_in ->
+        {:ok, signed_tx_in} = BsvRpc.TransactionInput.sign(tx_in, tx, key, utxo, sigtype)
+        signed_tx_in
+      end)
+
+    Map.put(tx, :inputs, signed_inputs)
   end
 end
