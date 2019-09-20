@@ -2,6 +2,9 @@ defmodule BsvRpc.AddressTest do
   use ExUnit.Case
   doctest BsvRpc.Address
 
+  # TODO
+  # - add more pubkey -> address test coverage
+
   test "mainnet pubkey address" do
     {:ok, %BsvRpc.Address{address: a, type: t, network: n}} =
       BsvRpc.Address.create("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")

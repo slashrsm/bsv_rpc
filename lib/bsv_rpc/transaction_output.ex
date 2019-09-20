@@ -135,11 +135,9 @@ defmodule BsvRpc.TransactionOutput do
   @spec p2pkh_script_pubkey(%BsvRpc.Address{}) :: binary
   def p2pkh_script_pubkey(address) do
     hash = BsvRpc.Address.hash160(address)
-    hash_len = byte_size(hash)
 
     <<@op_dup, @op_hash160>> <>
-      <<hash_len::size(8)>> <>
-      hash <>
+      BsvRpc.Helpers.to_varlen_data(hash) <>
       <<@op_equalverify, @op_checksig>>
   end
 end

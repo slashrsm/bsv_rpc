@@ -64,6 +64,26 @@ defmodule BsvRpc.Helpers do
   end
 
   @doc """
+  Gets variable length data (defines with variable length prefix bytes) from the beginning of the binary.
+
+  Returns a tuple with the variable length data as the first element and the rest of the original binary as
+  the second.
+
+  ## Examples
+    iex> BsvRpc.Helpers.get_varlen_data(<<0x01, 0xFF, 0xEE>>)
+    {<<255>>, <<0xEE>>}
+
+    iex> BsvRpc.Helpers.get_varlen_data(<<0xFD, 0x01, 0x00, 0xEE, 0x34>>)
+    {<<0xEE>>, <<0x34>>}
+  """
+  @spec get_varlen_data(binary) :: {binary, binary}
+  def get_varlen_data(data) do
+    {len, data} = get_varint(data)
+    <<data::binary-size(len), rest::binary>> = data
+    {data, rest}
+  end
+
+  @doc """
   Gets variable length integer representation of a number.
 
   ## Examples
@@ -87,22 +107,18 @@ defmodule BsvRpc.Helpers do
   def to_varint(number), do: <<0xFF, number::little-size(64)>>
 
   @doc """
-  Gets variable length data (defines with variable length prefix bytes) from the beginning of the binary.
-
-  Returns a tuple with the variable length data as the first element and the rest of the original binary as
-  the second.
+  Prefixed data with the varlen prefix.
 
   ## Examples
-    iex> BsvRpc.Helpers.get_varlen_data(<<0x01, 0xFF, 0xEE>>)
-    {<<255>>, <<0xEE>>}
 
-    iex> BsvRpc.Helpers.get_varlen_data(<<0xFD, 0x01, 0x00, 0xEE, 0x34>>)
-    {<<0xEE>>, <<0x34>>}
+    iex> BsvRpc.Helpers.to_varlen_data(<<0xff, 0xee>>)
+    <<0x02, 0xff, 0xee>>
+
+    iex> BsvRpc.Helpers.to_varlen_data(<<0xff>>)
+    <<0x01, 0xff>>
   """
-  @spec get_varlen_data(binary) :: {binary, binary}
-  def get_varlen_data(data) do
-    {len, data} = get_varint(data)
-    <<data::binary-size(len), rest::binary>> = data
-    {data, rest}
+  @spec(to_varlen_data(binary) :: binary, binary)
+  def to_varlen_data(data) do
+    BsvRpc.Helpers.to_varint(byte_size(data)) <> data
   end
 end
