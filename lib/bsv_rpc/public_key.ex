@@ -8,7 +8,7 @@ defmodule BsvRpc.PublicKey do
     iex> BsvRpc.PublicKey.create(<<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151, 220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9, 55, 77, 5, 200, 44, 30, 112, 6, 104>>)
     {:ok,
       %BsvRpc.PublicKey{
-        key: <<56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
           220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
           55, 77, 5, 200, 44, 30, 112, 6, 104>>,
         compressed: true,
@@ -21,7 +21,7 @@ defmodule BsvRpc.PublicKey do
     iex> BsvRpc.PublicKey.create(key)
     {:ok,
       %BsvRpc.PublicKey{
-        key: <<56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
           220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
           55, 77, 5, 200, 44, 30, 112, 6, 104>>,
         compressed: true,
@@ -49,7 +49,7 @@ defmodule BsvRpc.PublicKey do
     iex> BsvRpc.PublicKey.create(<<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151, 220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9, 55, 77, 5, 200, 44, 30, 112, 6, 104>>)
     {:ok,
       %BsvRpc.PublicKey{
-        key: <<56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
           220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
           55, 77, 5, 200, 44, 30, 112, 6, 104>>,
         compressed: true,
@@ -59,7 +59,7 @@ defmodule BsvRpc.PublicKey do
     iex> BsvRpc.PublicKey.create("0338C9BDFF603CCF4A6897DC9F039B1B013221FD7DF0C909374D05C82C1E700668")
     {:ok,
       %BsvRpc.PublicKey{
-        key: <<56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
           220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
           55, 77, 5, 200, 44, 30, 112, 6, 104>>,
         compressed: true,
@@ -70,7 +70,7 @@ defmodule BsvRpc.PublicKey do
     iex> BsvRpc.PublicKey.create(key)
     {:ok,
       %BsvRpc.PublicKey{
-        key: <<56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
           220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
           55, 77, 5, 200, 44, 30, 112, 6, 104>>,
         compressed: true,
@@ -82,7 +82,7 @@ defmodule BsvRpc.PublicKey do
     {:ok,
       %BsvRpc.PublicKey{
         compressed: true,
-        key: <<183, 111, 145, 38, 78, 222, 62, 195, 48, 106, 251, 83, 155, 93, 59,
+        key: <<3, 183, 111, 145, 38, 78, 222, 62, 195, 48, 106, 251, 83, 155, 93, 59,
           103, 42, 238, 116, 82, 249, 208, 96, 17, 197, 143, 28, 113, 73, 47, 108,
           33>>
       }
@@ -103,7 +103,7 @@ defmodule BsvRpc.PublicKey do
     create(key.key)
   end
 
-  def create(<<0x03, key::binary>>) do
+  def create(<<0x03, _rest::binary>> = key) do
     {:ok,
      %__MODULE__{
        compressed: true,
@@ -111,7 +111,7 @@ defmodule BsvRpc.PublicKey do
      }}
   end
 
-  def create(<<0x02, key::binary>>) do
+  def create(<<0x02, _rest::binary>> = key) do
     {:ok,
      %__MODULE__{
        compressed: true,
@@ -119,7 +119,7 @@ defmodule BsvRpc.PublicKey do
      }}
   end
 
-  def create(<<0x04, key::binary>>) do
+  def create(<<0x04, _rest::binary>> = key) do
     {:ok,
      %__MODULE__{
        compressed: false,
