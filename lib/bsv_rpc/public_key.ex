@@ -88,7 +88,8 @@ defmodule BsvRpc.PublicKey do
       }
     }
   """
-  @spec create(binary | ExtendedKey.key()) :: {:ok, __MODULE__.t()} | {:error, String.t()}
+  @spec create(binary | ExtendedKey.key() | BsvRpc.PrivateKey.t()) ::
+          {:ok, __MODULE__.t()} | {:error, String.t()}
   def create(%BsvRpc.PrivateKey{key: key}) do
     case :libsecp256k1.ec_pubkey_create(key, :compressed) do
       {:error, reason} ->
@@ -100,6 +101,7 @@ defmodule BsvRpc.PublicKey do
   end
 
   def create(%ExtendedKey{} = key) do
+    key = ExtendedKey.neuter(key)
     create(key.key)
   end
 

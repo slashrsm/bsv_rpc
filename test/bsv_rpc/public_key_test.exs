@@ -47,4 +47,19 @@ defmodule BsvRpc.PublicKeyTest do
     assert {:error, "Unable to create public key: Private key size not 32 bytes"} ==
              BsvRpc.PublicKey.create(pk)
   end
+
+  test "create from extended private key" do
+    pk =
+      ExtendedKey.from_string(
+        "xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV"
+      )
+
+    assert {:ok,
+            %BsvRpc.PublicKey{
+              key:
+                <<3, 66, 224, 235, 128, 197, 119, 153, 242, 38, 36, 38, 78, 95, 117, 65, 64, 11,
+                  153, 109, 59, 56, 207, 255, 252, 18, 235, 218, 122, 201, 33, 223, 47>>,
+              compressed: true
+            }} == BsvRpc.PublicKey.create(pk)
+  end
 end
