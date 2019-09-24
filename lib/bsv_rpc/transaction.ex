@@ -13,16 +13,16 @@ defmodule BsvRpc.Transaction do
   defstruct [:hash, :version, :size, :locktime, :inputs, :outputs, :block, :confirmations, :time]
 
   @type t :: %__MODULE__{
-          hash: binary(),
+          hash: binary() | nil,
           inputs: [BsvRpc.TransactionInput.t()],
           outputs: [BsvRpc.TransactionOutput.t()],
           version: non_neg_integer(),
           locktime: non_neg_integer(),
           # Optional block hash.
-          block: binary(),
-          confirmations: non_neg_integer(),
-          time: DateTime.t(),
-          size: non_neg_integer()
+          block: binary() | nil,
+          confirmations: non_neg_integer() | nil,
+          time: DateTime.t() | nil,
+          size: non_neg_integer() | nil
         }
 
   @doc """
@@ -124,7 +124,19 @@ defmodule BsvRpc.Transaction do
     "4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"
   """
   @spec id(__MODULE__.t()) :: String.t()
-  def id(transaction), do: Base.encode16(transaction.hash)
+  def id(transaction) do
+    case transaction.hash do
+      nil ->
+        transaction
+        |> to_binary()
+        |> BsvRpc.Helpers.double_sha256()
+        |> BsvRpc.Helpers.reverse_endianess()
+        |> Base.encode16()
+
+      _ ->
+        Base.encode16(transaction.hash)
+    end
+  end
 
   @doc """
   Generates a P2PKH transaction to send funds to a single address.
