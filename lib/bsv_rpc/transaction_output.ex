@@ -8,6 +8,8 @@ defmodule BsvRpc.TransactionOutput do
   @op_hash160 0xA9
   @op_equalverify 0x88
   @op_checksig 0xAC
+  @op_false 0x00
+  @op_return 0x6A
 
   @typedoc """
   A Bitcoin transaction output.
@@ -139,5 +141,28 @@ defmodule BsvRpc.TransactionOutput do
     <<@op_dup, @op_hash160>> <>
       BsvRpc.Helpers.to_varlen_data(hash) <>
       <<@op_equalverify, @op_checksig>>
+  end
+
+  @doc """
+  Creates a data (OP_RETURN) output.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.get_data_output(["foo", "barbaz", <<0xFF, 0xFF>>])
+    %BsvRpc.TransactionOutput{
+      value: 0,
+      script_pubkey: <<0x00, 0x6A, 3, "foo"::binary, 6, "barbaz"::binary, 2, 0xFF, 0xFF>>
+    }
+  """
+  @spec get_data_output([String.t() | binary()]) :: __MODULE__.t()
+  def get_data_output(content) do
+    %__MODULE__{
+      value: 0,
+      script_pubkey:
+        <<@op_false, @op_return>> <>
+          Enum.reduce(content, <<>>, fn item, acc ->
+            acc <> BsvRpc.Helpers.to_varlen_data(item)
+          end)
+    }
   end
 end
