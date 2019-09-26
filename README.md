@@ -27,6 +27,7 @@ with any other implementation than Bitcoin SV.
   * P2PKH transaction generation
   * [Variable length integer](https://en.bitcoin.it/wiki/Protocol_documentation#Variable_length_integer) operations
 * JSON-RPC client API (not complete, support for new methods added regularly)
+* MetaNet operations
 
 ## Usage
 
