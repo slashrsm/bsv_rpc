@@ -4,6 +4,7 @@ defmodule BsvRpc.MetaNet do
   Function for MetaNet operations.
   """
   alias BsvRpc.MetaNet.Graph
+  require Logger
 
   @network_flag "meta"
 
@@ -16,12 +17,12 @@ defmodule BsvRpc.MetaNet do
 
   @spec publish_node(BsvRpc.MetaNet.Graph.t(), BsvRpc.PrivateKey.t(), String.t(), list()) ::
           {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
-  defp publish_node(
-         %Graph{} = graph,
-         %BsvRpc.PrivateKey{} = funding_key,
-         derivation_path,
-         content \\ []
-       ) do
+  def publish_node(
+        %Graph{} = graph,
+        %BsvRpc.PrivateKey{} = funding_key,
+        derivation_path,
+        content \\ []
+      ) do
     metanet_key = ExtendedKey.derive_path(graph.metanet_key, "m/#{derivation_path}")
 
     node_address =
@@ -30,28 +31,62 @@ defmodule BsvRpc.MetaNet do
       |> elem(1)
       |> BsvRpc.Address.create!(:mainnet, :pubkey)
 
+    parent_key =
+      if is_toplevel(derivation_path) do
+        metanet_key
+      else
+        ExtendedKey.derive_path(
+          graph.metanet_key,
+          "m/" <> get_parent_derivation_path(derivation_path)
+        )
+      end
+
+    parent_address =
+      parent_key
+      |> ExtendedKey.neuter()
+      |> BsvRpc.PublicKey.create()
+      |> elem(1)
+      |> BsvRpc.Address.create!(:mainnet, :pubkey)
+
     # Simplest MetaNet transaction with one input and one OP_RETURN output will
-    # be about 250 bytes.
+    # be about 250 bytes. But dust limit is 546 so at least that.
     # TODO need to consider multiple inputs
-    # TODO count any content
-    amount = 250
+    amount =
+      case 250 + Enum.reduce(content, 0, fn item, acc -> acc + byte_size(item) end) do
+        fee when fee > 546 -> fee
+        _ -> 546
+      end
 
-    funding_tx = funding_tx(funding_key, node_address, amount)
-    BsvRpc.broadcast_transaction(funding_tx)
+    ftx = funding_tx(funding_key, parent_address, amount)
+    id = BsvRpc.Transaction.id(ftx) |> String.downcase()
+    ^id = BsvRpc.broadcast_transaction(ftx)
+    Logger.debug("Funding TX for MetaNet node #{node_address.address}: #{id}")
 
-    [funding_utxo | _] = funding_tx.outputs
+    [funding_utxo | _] = ftx.outputs
 
-    metanet_headers = [
-      @network_flag,
-      node_address.address,
-      # TODO this will only work for parents.
-      "NULL"
-    ]
+    metanet_headers =
+      if is_toplevel(derivation_path) do
+        # Parent has no reference to the parent.
+        [
+          @network_flag,
+          node_address.address,
+          "NULL"
+        ]
+      else
+        {:ok, parent_tx} = Graph.get_parent(graph, derivation_path)
 
-    meta_node_tx =
-      metanet_node_tx(metanet_key, funding_tx, funding_utxo, metanet_headers ++ content)
+        [
+          @network_flag,
+          node_address.address,
+          BsvRpc.Transaction.id(parent_tx) |> String.downcase()
+        ]
+      end
 
-    BsvRpc.broadcast_transaction(meta_node_tx)
+    meta_node_tx = metanet_node_tx(parent_key, ftx, funding_utxo, metanet_headers ++ content)
+
+    id = BsvRpc.Transaction.id(meta_node_tx) |> String.downcase()
+    ^id = BsvRpc.broadcast_transaction(meta_node_tx)
+    Logger.debug("Node TX for MetaNet node #{node_address.address}: #{id}")
 
     {:ok, Graph.add_node(graph, meta_node_tx, derivation_path), meta_node_tx}
   end
@@ -79,7 +114,7 @@ defmodule BsvRpc.MetaNet do
       inputs: [
         %BsvRpc.TransactionInput{
           previous_transaction: Base.decode16!(utxo["tx_hash"], case: :mixed),
-          previous_output: utxo["tx_out"],
+          previous_output: utxo["tx_pos"],
           sequence: 0xFFFFFFFF,
           script_sig: <<>>
         }
@@ -91,6 +126,17 @@ defmodule BsvRpc.MetaNet do
         }
       ]
     }
+
+    funding_tx =
+      if utxo["value"] > 1.5 * amount do
+        BsvRpc.Transaction.add_output(funding_tx, %BsvRpc.TransactionOutput{
+          # TODO fee dynamically
+          value: utxo["value"] - amount - 230,
+          script_pubkey: BsvRpc.TransactionOutput.p2pkh_script_pubkey(funding_address)
+        })
+      else
+        funding_tx
+      end
 
     BsvRpc.Transaction.sign(
       funding_tx,
@@ -109,7 +155,7 @@ defmodule BsvRpc.MetaNet do
           list()
         ) :: BsvRpc.Transaction.t()
   defp metanet_node_tx(
-         %ExtendedKey{} = metanet_key,
+         %ExtendedKey{} = parent_key,
          %BsvRpc.Transaction{} = funding_tx,
          %BsvRpc.TransactionOutput{} = utxo,
          content
@@ -119,7 +165,7 @@ defmodule BsvRpc.MetaNet do
       locktime: 0,
       inputs: [
         %BsvRpc.TransactionInput{
-          previous_transaction: BsvRpc.Transaction.id(funding_tx),
+          previous_transaction: Base.decode16!(BsvRpc.Transaction.id(funding_tx)),
           previous_output: 0,
           sequence: 0xFFFFFFFF,
           script_sig: <<>>
@@ -128,7 +174,24 @@ defmodule BsvRpc.MetaNet do
       outputs: [BsvRpc.TransactionOutput.get_data_output(content)]
     }
 
-    {:ok, signing_key} = BsvRpc.PrivateKey.create(metanet_key)
+    {:ok, signing_key} = BsvRpc.PrivateKey.create(parent_key)
     BsvRpc.Transaction.sign(tx, signing_key, utxo)
+  end
+
+  @spec get_parent_derivation_path(String.t()) :: String.t()
+  defp get_parent_derivation_path(derivation_path) do
+    if is_toplevel(derivation_path) do
+      raise "Can't get parent of the top level path."
+    else
+      String.split(derivation_path, "/")
+      |> List.pop_at(-1)
+      |> elem(1)
+      |> Enum.join("/")
+    end
+  end
+
+  @spec is_toplevel(String.t()) :: boolean()
+  defp is_toplevel(derivation_path) do
+    String.split(derivation_path, "/") |> length() == 1
   end
 end
