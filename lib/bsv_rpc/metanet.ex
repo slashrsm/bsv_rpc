@@ -11,15 +11,14 @@ defmodule BsvRpc.MetaNet do
   @spec create_root_node(ExtendedKey.key(), BsvRpc.PrivateKey.t()) :: BsvRpc.MetaNet.Graph.t()
   def create_root_node(%ExtendedKey{} = metanet_key, %BsvRpc.PrivateKey{} = funding_key) do
     graph = Graph.create(metanet_key, funding_key)
-    {:ok, graph, _published_node} = publish_node(graph, funding_key, "0", [])
+    {:ok, graph, _published_node} = publish_node(graph, "0", [])
     graph
   end
 
-  @spec publish_node(BsvRpc.MetaNet.Graph.t(), BsvRpc.PrivateKey.t(), String.t(), list()) ::
+  @spec publish_node(BsvRpc.MetaNet.Graph.t(), String.t(), list()) ::
           {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
   def publish_node(
         %Graph{} = graph,
-        %BsvRpc.PrivateKey{} = funding_key,
         derivation_path,
         content
       ) do
@@ -57,7 +56,7 @@ defmodule BsvRpc.MetaNet do
         _ -> 546
       end
 
-    ftx = funding_tx(funding_key, parent_address, amount)
+    ftx = funding_tx(graph.funding_key, parent_address, amount)
     id = BsvRpc.Transaction.id(ftx) |> String.downcase()
     ^id = BsvRpc.broadcast_transaction(ftx)
     Logger.debug("Funding TX for MetaNet node #{node_address.address}: #{id}")
@@ -125,8 +124,7 @@ defmodule BsvRpc.MetaNet do
   defp funding_tx(%BsvRpc.PrivateKey{} = funding_key, %BsvRpc.Address{} = destination, amount) do
     funding_address =
       funding_key
-      |> BsvRpc.PublicKey.create()
-      |> elem(1)
+      |> BsvRpc.PublicKey.create!()
       |> BsvRpc.Address.create!(:mainnet, :pubkey)
 
     %HTTPoison.Response{status_code: 200, body: body} =

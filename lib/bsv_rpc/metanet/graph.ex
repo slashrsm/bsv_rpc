@@ -4,7 +4,7 @@ defmodule BsvRpc.MetaNet.Graph do
   Function for MetaNet operations.
   """
 
-  @enforce_keys [:metanet_key, :funding_key]
+  @enforce_keys [:metanet_key]
 
   @typedoc """
   A MetaNet graph.
@@ -13,7 +13,7 @@ defmodule BsvRpc.MetaNet.Graph do
 
   @type t :: %__MODULE__{
           metanet_key: ExtendedKey.key(),
-          funding_key: BsvRpc.PrivateKey.t(),
+          funding_key: BsvRpc.PrivateKey.t() | nil,
           nodes: map()
         }
 
@@ -60,9 +60,38 @@ defmodule BsvRpc.MetaNet.Graph do
       },
       nodes: %{}
     }
+
+    iex> meta_key = %ExtendedKey{
+    ...>  chain_code: <<105, 183, 126, 110, 23, 105, 199, 184, 137, 146, 206, 27, 4,
+    ...>    159, 85, 14, 42, 28, 94, 29, 254, 252, 8, 108, 114, 125, 173, 37, 5, 124,
+    ...>    61, 103>>,
+    ...>  child_num: 0,
+    ...>  depth: 0,
+    ...>  key: <<7, 195, 21, 39, 143, 145, 107, 160, 195, 209, 211, 201, 62, 15, 193,
+    ...>    75, 9, 63, 56, 49, 39, 19, 191, 150, 24, 184, 96, 119, 20, 151, 49, 103>>,
+    ...>  parent_fingerprint: <<0, 0, 0, 0>>,
+    ...>  version: <<4, 136, 173, 228>>
+    ...>}
+    iex> BsvRpc.MetaNet.Graph.create(meta_key)
+    %BsvRpc.MetaNet.Graph{
+      funding_key: nil,
+      metanet_key: %ExtendedKey{
+        chain_code: <<105, 183, 126, 110, 23, 105, 199, 184, 137, 146,
+          206, 27, 4, 159, 85, 14, 42, 28, 94, 29, 254, 252, 8, 108,
+          114, 125, 173, 37, 5, 124, 61, 103>>,
+        child_num: 0,
+        depth: 0,
+        key: <<7, 195, 21, 39, 143, 145, 107, 160, 195, 209, 211, 201,
+          62, 15, 193, 75, 9, 63, 56, 49, 39, 19, 191, 150, 24, 184, 96,
+          119, 20, 151, 49, 103>>,
+        parent_fingerprint: <<0, 0, 0, 0>>,
+        version: <<4, 136, 173, 228>>
+      },
+      nodes: %{}
+    }
   """
-  @spec create(ExtendedKey.key(), BsvRpc.PrivateKey.t(), map) :: __MODULE__.t()
-  def create(%ExtendedKey{} = metanet_key, %BsvRpc.PrivateKey{} = funding_key, nodes \\ %{}) do
+  @spec create(ExtendedKey.key(), BsvRpc.PrivateKey.t() | nil, map) :: __MODULE__.t()
+  def create(%ExtendedKey{} = metanet_key, funding_key \\ nil, nodes \\ %{}) do
     %__MODULE__{
       metanet_key: metanet_key,
       funding_key: funding_key,
@@ -76,12 +105,7 @@ defmodule BsvRpc.MetaNet.Graph do
   ## Examples
 
     iex> graph = %BsvRpc.MetaNet.Graph{
-    ...>   funding_key: %BsvRpc.PrivateKey{
-    ...>     key: <<20, 25, 37, 10, 205, 108, 92, 206, 133, 180, 29, 209, 13,
-    ...>       2, 29, 254, 191, 18, 130, 12, 255, 57, 251, 199, 92, 120, 134,
-    ...>       83, 127, 175, 198, 27>>,
-    ...>     network: :mainnet
-    ...>   },
+    ...>   funding_key: nil,
     ...>   metanet_key: %ExtendedKey{
     ...>     chain_code: <<105, 183, 126, 110, 23, 105, 199, 184, 137, 146,
     ...>       206, 27, 4, 159, 85, 14, 42, 28, 94, 29, 254, 252, 8, 108,
@@ -158,12 +182,7 @@ defmodule BsvRpc.MetaNet.Graph do
   ## Examples
 
     iex> graph = %BsvRpc.MetaNet.Graph{
-    ...>      funding_key: %BsvRpc.PrivateKey{
-    ...>        key: <<20, 25, 37, 10, 205, 108, 92, 206, 133, 180, 29, 209, 13,
-    ...>          2, 29, 254, 191, 18, 130, 12, 255, 57, 251, 199, 92, 120, 134,
-    ...>          83, 127, 175, 198, 27>>,
-    ...>        network: :mainnet
-    ...>      },
+    ...>      funding_key: nil,
     ...>      metanet_key: %ExtendedKey{
     ...>        chain_code: <<105, 183, 126, 110, 23, 105, 199, 184, 137, 146,
     ...>          206, 27, 4, 159, 85, 14, 42, 28, 94, 29, 254, 252, 8, 108,
