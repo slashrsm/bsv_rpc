@@ -11,7 +11,7 @@ defmodule BsvRpc.MetaNet do
   @spec create_root_node(ExtendedKey.key(), BsvRpc.PrivateKey.t()) :: BsvRpc.MetaNet.Graph.t()
   def create_root_node(%ExtendedKey{} = metanet_key, %BsvRpc.PrivateKey{} = funding_key) do
     graph = Graph.create(metanet_key, funding_key)
-    {:ok, graph, _published_node} = publish_node(graph, funding_key, "0")
+    {:ok, graph, _published_node} = publish_node(graph, funding_key, "0", [])
     graph
   end
 
@@ -21,7 +21,7 @@ defmodule BsvRpc.MetaNet do
         %Graph{} = graph,
         %BsvRpc.PrivateKey{} = funding_key,
         derivation_path,
-        content \\ []
+        content
       ) do
     metanet_key = ExtendedKey.derive_path(graph.metanet_key, "m/#{derivation_path}")
 
@@ -64,6 +64,35 @@ defmodule BsvRpc.MetaNet do
 
     funding_utxo = BsvRpc.UTXO.create(ftx, 0)
 
+    publish_node(graph, funding_utxo, derivation_path, content)
+  end
+
+  @spec publish_node(BsvRpc.MetaNet.Graph.t(), BsvRpc.UTXO.t(), String.t(), list()) ::
+          {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
+  def publish_node(
+        %Graph{} = graph,
+        %BsvRpc.UTXO{} = funding_utxo,
+        derivation_path,
+        content
+      ) do
+    metanet_key = ExtendedKey.derive_path(graph.metanet_key, "m/#{derivation_path}")
+
+    node_address =
+      ExtendedKey.neuter(metanet_key)
+      |> BsvRpc.PublicKey.create()
+      |> elem(1)
+      |> BsvRpc.Address.create!(:mainnet, :pubkey)
+
+    parent_key =
+      if is_toplevel(derivation_path) do
+        metanet_key
+      else
+        ExtendedKey.derive_path(
+          graph.metanet_key,
+          "m/" <> get_parent_derivation_path(derivation_path)
+        )
+      end
+
     metanet_headers =
       if is_toplevel(derivation_path) do
         # Parent has no reference to the parent.
@@ -82,7 +111,7 @@ defmodule BsvRpc.MetaNet do
         ]
       end
 
-    meta_node_tx = metanet_node_tx(parent_key, ftx, funding_utxo, metanet_headers ++ content)
+    meta_node_tx = metanet_node_tx(parent_key, funding_utxo, metanet_headers ++ content)
 
     id = BsvRpc.Transaction.id(meta_node_tx) |> String.downcase()
     ^id = BsvRpc.broadcast_transaction(meta_node_tx)
@@ -147,13 +176,11 @@ defmodule BsvRpc.MetaNet do
 
   @spec metanet_node_tx(
           ExtendedKey.key(),
-          BsvRpc.Transaction.t(),
           BsvRpc.UTXO.t(),
           list()
         ) :: BsvRpc.Transaction.t()
   defp metanet_node_tx(
          %ExtendedKey{} = parent_key,
-         %BsvRpc.Transaction{} = funding_tx,
          %BsvRpc.UTXO{} = utxo,
          content
        ) do
@@ -162,8 +189,8 @@ defmodule BsvRpc.MetaNet do
       locktime: 0,
       inputs: [
         %BsvRpc.TransactionInput{
-          previous_transaction: Base.decode16!(BsvRpc.Transaction.id(funding_tx)),
-          previous_output: 0,
+          previous_transaction: utxo.transaction,
+          previous_output: utxo.output,
           sequence: 0xFFFFFFFF,
           script_sig: <<>>
         }
