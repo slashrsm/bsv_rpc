@@ -138,4 +138,52 @@ defmodule BsvRpc.PublicKey do
         {:error, "Could not decode public key."}
     end
   end
+
+  @doc """
+  Creates a public key.
+
+  Works similar to `create/1` with the exception being thrown in case of an error.
+
+  ## Examples
+    iex> BsvRpc.PublicKey.create!(<<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151, 220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9, 55, 77, 5, 200, 44, 30, 112, 6, 104>>)
+    %BsvRpc.PublicKey{
+      key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
+        55, 77, 5, 200, 44, 30, 112, 6, 104>>,
+      compressed: true,
+    }
+
+    iex> BsvRpc.PublicKey.create!("0338C9BDFF603CCF4A6897DC9F039B1B013221FD7DF0C909374D05C82C1E700668")
+    %BsvRpc.PublicKey{
+      key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
+        55, 77, 5, 200, 44, 30, 112, 6, 104>>,
+      compressed: true,
+    }
+
+    iex> key = ExtendedKey.from_string("xpub6934X9tFysrrNCTyWyFPkXPJRRY6r32gBYxAdaXCqqMhoPTEiwU9dxx4Hyc3PURqGE2sZBVq5m6gAYdr9cJoqZfB4vxZ4iFAtDNmacdccDn")
+    iex> BsvRpc.PublicKey.create!(key)
+    %BsvRpc.PublicKey{
+      key: <<3, 56, 201, 189, 255, 96, 60, 207, 74, 104, 151,
+        220, 159, 3, 155, 27, 1, 50, 33, 253, 125, 240, 201, 9,
+        55, 77, 5, 200, 44, 30, 112, 6, 104>>,
+      compressed: true,
+    }
+
+    iex> {:ok, private_key} = BsvRpc.PrivateKey.create(<<200, 39, 129, 91, 180, 166, 106, 96, 75, 145, 229, 79, 107, 38, 116, 240, 56, 93, 12, 228, 63, 254, 128, 211, 54, 156, 181, 205, 21, 189, 1, 152>>, :mainnet)
+    iex> BsvRpc.PublicKey.create!(private_key)
+    %BsvRpc.PublicKey{
+      compressed: true,
+      key: <<3, 183, 111, 145, 38, 78, 222, 62, 195, 48, 106, 251, 83, 155, 93, 59,
+        103, 42, 238, 116, 82, 249, 208, 96, 17, 197, 143, 28, 113, 73, 47, 108,
+        33>>
+    }
+  """
+  @spec create!(binary | ExtendedKey.key() | BsvRpc.PrivateKey.t()) :: __MODULE__.t()
+  def create!(key) do
+    case create(key) do
+      {:ok, public_key} -> public_key
+      {:error, reason} -> raise reason
+    end
+  end
 end
