@@ -145,7 +145,7 @@ defmodule BsvRpc do
 
       response ->
         response
-        |> Base.decode16!(case: :lower)
+        |> Base.decode16!(case: :mixed)
         |> BsvRpc.Transaction.create()
     end
   end

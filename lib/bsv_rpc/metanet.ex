@@ -62,7 +62,7 @@ defmodule BsvRpc.MetaNet do
     ^id = BsvRpc.broadcast_transaction(ftx)
     Logger.debug("Funding TX for MetaNet node #{node_address.address}: #{id}")
 
-    [funding_utxo | _] = ftx.outputs
+    funding_utxo = BsvRpc.UTXO.create(ftx, 0)
 
     metanet_headers =
       if is_toplevel(derivation_path) do
@@ -141,23 +141,20 @@ defmodule BsvRpc.MetaNet do
     BsvRpc.Transaction.sign(
       funding_tx,
       funding_key,
-      %BsvRpc.TransactionOutput{
-        value: utxo["value"],
-        script_pubkey: BsvRpc.TransactionOutput.p2pkh_script_pubkey(funding_address)
-      }
+      BsvRpc.get_transaction(utxo["tx_hash"]) |> BsvRpc.UTXO.create(utxo["tx_pos"])
     )
   end
 
   @spec metanet_node_tx(
           ExtendedKey.key(),
           BsvRpc.Transaction.t(),
-          BsvRpc.TransactionOutput.t(),
+          BsvRpc.UTXO.t(),
           list()
         ) :: BsvRpc.Transaction.t()
   defp metanet_node_tx(
          %ExtendedKey{} = parent_key,
          %BsvRpc.Transaction{} = funding_tx,
-         %BsvRpc.TransactionOutput{} = utxo,
+         %BsvRpc.UTXO{} = utxo,
          content
        ) do
     tx = %BsvRpc.Transaction{

@@ -124,7 +124,7 @@ defmodule BsvRpc.TransactionInput do
           BsvRpc.TransactionInput.t(),
           BsvRpc.Transaction.t(),
           BsvRpc.PrivateKey.t(),
-          BsvRpc.TransactionOutput.t() | nil,
+          BsvRpc.UTXO.t() | nil,
           BsvRpc.Sighash.t()
         ) :: {:error, String.t()} | {:ok, BsvRpc.TransactionInput.t()}
   def sign(

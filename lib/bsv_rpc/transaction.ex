@@ -297,7 +297,7 @@ defmodule BsvRpc.Transaction do
     iex> {:ok, k} = ExtendedKey.from_string("xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV")
     ...>   |> BsvRpc.PrivateKey.create()
     iex> tx = BsvRpc.Transaction.create_from_hex("0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000")
-    iex> utxo = %BsvRpc.TransactionOutput{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000}
+    iex> utxo = %BsvRpc.UTXO{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000, transaction: <<>>, output: 0}
     iex> signed_tx = BsvRpc.Transaction.sign(tx, k, utxo)
     iex> [input | []] = signed_tx.inputs
     iex> Base.encode16(input.script_sig)
@@ -306,7 +306,7 @@ defmodule BsvRpc.Transaction do
   @spec sign(
           __MODULE__.t(),
           BsvRpc.PrivateKey.t(),
-          BsvRpc.TransactionOutput.t() | nil,
+          BsvRpc.UTXO.t() | nil,
           BsvRpc.Sighash.t()
         ) :: __MODULE__.t()
   def sign(

@@ -26,7 +26,7 @@ defmodule BsvRpc.Sighash do
     ...>   |> BsvRpc.PrivateKey.create()
     iex> tx = BsvRpc.Transaction.create_from_hex("0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000")
     iex> [tx_in | _] = tx.inputs
-    iex> utxo = %BsvRpc.TransactionOutput{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000}
+    iex> utxo = %BsvRpc.UTXO{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000, transaction: <<>>, output: 0}
     iex> Base.encode16(BsvRpc.Sighash.sighash(tx_in, tx, k, utxo, [:sighash_all, :sighash_forkid]))
     "A55AF5F6A521E714AC45BCED0BE08E1A0CCF11E09771D694942BB9C2C9F10FC6"
   """
@@ -34,14 +34,14 @@ defmodule BsvRpc.Sighash do
           BsvRpc.TransactionInput.t(),
           BsvRpc.Transaction.t(),
           BsvRpc.PrivateKey.t(),
-          BsvRpc.TransactionOutput.t() | nil,
+          BsvRpc.UTXO.t() | nil,
           __MODULE__.t()
         ) :: binary
   def sighash(
         %BsvRpc.TransactionInput{} = tx_in,
         %BsvRpc.Transaction{} = tx,
         %BsvRpc.PrivateKey{} = _key,
-        %BsvRpc.TransactionOutput{} = utxo,
+        %BsvRpc.UTXO{} = utxo,
         [:sighash_all, :sighash_forkid] = sighash_type
       ) do
     # TODO In JS there is a bitwise or something. Figure out why it is there.
