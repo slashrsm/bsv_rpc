@@ -178,7 +178,8 @@ defmodule BsvRpc do
       %BsvRpc.UTXO{
         value: round(utxo["amount"] * 100_000_000),
         transaction: Base.decode16!(utxo["txid"], case: :mixed),
-        output: utxo["vout"]
+        output: utxo["vout"],
+        script_pubkey: Base.decode16!(utxo["scriptPubKey"], case: :mixed)
       }
     end)
   end

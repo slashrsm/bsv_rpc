@@ -61,7 +61,8 @@ defmodule BsvRpc.TransactionTest do
         transaction:
           Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"),
         output: 0,
-        value: 5_000_000_000
+        value: 5_000_000_000,
+        script_pubkey: <<>>
       }
     ]
 
@@ -103,7 +104,8 @@ defmodule BsvRpc.TransactionTest do
         transaction:
           Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"),
         output: 0,
-        value: 5_000_000_000
+        value: 5_000_000_000,
+        script_pubkey: <<>>
       }
     ]
 
@@ -140,7 +142,8 @@ defmodule BsvRpc.TransactionTest do
         transaction:
           Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"),
         output: 0,
-        value: 5_000_000_000
+        value: 5_000_000_000,
+        script_pubkey: <<>>
       }
     ]
 
@@ -156,7 +159,8 @@ defmodule BsvRpc.TransactionTest do
         transaction:
           Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"),
         output: 0,
-        value: 5_000_000_000
+        value: 5_000_000_000,
+        script_pubkey: <<>>
       }
     ]
 

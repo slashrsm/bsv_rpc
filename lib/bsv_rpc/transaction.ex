@@ -175,7 +175,7 @@ defmodule BsvRpc.Transaction do
 
     iex> {:ok, to} = BsvRpc.Address.create("1wBQpttZsiMtrwgjp2NuGNEyBMPdnzCeA")
     iex> {:ok, change} = BsvRpc.Address.create("18v4ZTwZAkk7HKECkfutns1bfGVehaXNkW")
-    iex> utxos = [%BsvRpc.UTXO{transaction: Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"), output: 0, value: 5_000_000_000}]
+    iex> utxos = [%BsvRpc.UTXO{transaction: Base.decode16!("4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"), output: 0, value: 5_000_000_000, script_pubkey: <<>>}]
     iex> BsvRpc.Transaction.send_to(to, 4_000_000_000, utxos, change)
     {:ok, %BsvRpc.Transaction{
       block: nil,

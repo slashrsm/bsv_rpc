@@ -234,7 +234,10 @@ defmodule BsvRpcTest do
              value: 156_566,
              transaction:
                Base.decode16!("B2E068EDB272EBFEE3306E45F2D2A941E720A3AE884914E3CF5EDC49542CDC30"),
-             output: 1
+             output: 1,
+             script_pubkey:
+               <<118, 169, 20, 212, 110, 181, 44, 217, 57, 65, 152, 137, 105, 248, 108, 182, 252,
+                 239, 139, 153, 219, 16, 56, 136, 172>>
            } == utxo
 
     assert called(
@@ -272,7 +275,10 @@ defmodule BsvRpcTest do
              value: 156_566,
              transaction:
                Base.decode16!("B2E068EDB272EBFEE3306E45F2D2A941E720A3AE884914E3CF5EDC49542CDC30"),
-             output: 1
+             output: 1,
+             script_pubkey:
+               <<118, 169, 20, 212, 110, 181, 44, 217, 57, 65, 152, 137, 105, 248, 108, 182, 252,
+                 239, 139, 153, 219, 16, 56, 136, 172>>
            } == utxo
 
     assert called(

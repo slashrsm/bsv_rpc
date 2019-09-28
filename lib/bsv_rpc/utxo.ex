@@ -7,13 +7,14 @@ defmodule BsvRpc.UTXO do
   @typedoc """
   A Bitcoin transaction output.
   """
-  @enforce_keys [:transaction, :output]
-  defstruct [:value, :transaction, :output]
+  @enforce_keys [:transaction, :output, :value, :script_pubkey]
+  defstruct [:value, :transaction, :output, :script_pubkey]
 
   @type t :: %__MODULE__{
           value: non_neg_integer(),
           transaction: binary(),
-          output: non_neg_integer()
+          output: non_neg_integer(),
+          script_pubkey: <<>>
         }
 
   @doc """
@@ -29,15 +30,20 @@ defmodule BsvRpc.UTXO do
       transaction: <<74, 94, 30, 75, 170, 184, 159, 58, 50, 81, 138,
         136, 195, 27, 200, 127, 97, 143, 118, 103, 62, 44, 199, 122,
         178, 18, 123, 122, 253, 237, 163, 59>>,
-      value: 5000000000
+      value: 5000000000,
+      script_pubkey: <<65, 4, 103, 138, 253, 176, 254, 85, 72, 39, 25, 103, 241, 166, 113, 48, 183, 16, 92, 214, 168, 40, 224, 57, 9, 166, 121, 98, 224, 234, 31, 97, 222, 182, 73,
+              246, 188, 63, 76, 239, 56, 196, 243, 85, 4, 229, 30, 193, 18, 222,
+              92, 56, 77, 247, 186, 11, 141, 87, 138, 76, 112, 43, 107, 241, 29,
+              95, 172>>,
     }
   """
   @spec create(%BsvRpc.Transaction{}, non_neg_integer) :: %__MODULE__{}
   def create(transaction, output_nr) do
     %__MODULE__{
       value: Enum.at(transaction.outputs, output_nr).value,
-      transaction: transaction.hash,
-      output: output_nr
+      transaction: transaction.hash(),
+      output: output_nr,
+      script_pubkey: Enum.at(transaction.outputs, output_nr).script_pubkey
     }
   end
 end
