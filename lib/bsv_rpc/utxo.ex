@@ -41,7 +41,7 @@ defmodule BsvRpc.UTXO do
   def create(transaction, output_nr) do
     %__MODULE__{
       value: Enum.at(transaction.outputs, output_nr).value,
-      transaction: transaction.hash(),
+      transaction: BsvRpc.Transaction.hash(transaction),
       output: output_nr,
       script_pubkey: Enum.at(transaction.outputs, output_nr).script_pubkey
     }
