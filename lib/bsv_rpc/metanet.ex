@@ -165,7 +165,7 @@ defmodule BsvRpc.MetaNet do
         funding_tx
       end
 
-    BsvRpc.Transaction.sign(
+    BsvRpc.Transaction.sign!(
       funding_tx,
       funding_key,
       BsvRpc.get_transaction(utxo["tx_hash"]) |> BsvRpc.UTXO.create(utxo["tx_pos"])
@@ -197,7 +197,7 @@ defmodule BsvRpc.MetaNet do
     }
 
     {:ok, signing_key} = BsvRpc.PrivateKey.create(parent_key)
-    BsvRpc.Transaction.sign(tx, signing_key, utxo)
+    BsvRpc.Transaction.sign!(tx, signing_key, utxo)
   end
 
   @spec get_parent_derivation_path(String.t()) :: String.t()
