@@ -114,7 +114,7 @@ defmodule BsvRpc.MetaNet do
 
     id = BsvRpc.Transaction.id(meta_node_tx) |> String.downcase()
     ^id = BsvRpc.broadcast_transaction(meta_node_tx)
-    Logger.debug("Node TX for MetaNet node #{node_address.address}: #{id}")
+    Logger.info("Node TX for MetaNet node #{node_address.address}: #{id}")
 
     {:ok, Graph.add_node(graph, meta_node_tx, derivation_path), meta_node_tx}
   end
