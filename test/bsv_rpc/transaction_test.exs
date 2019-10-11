@@ -203,4 +203,54 @@ defmodule BsvRpc.TransactionTest do
     assert "F2F412D9C28472BCB40204DF8636C5154AEA737504A1865529BFE3D13D848F28" ==
              BsvRpc.Transaction.id(tx)
   end
+
+  test "number of keys should match inputs when signing" do
+    {:ok, k} =
+      ExtendedKey.from_string(
+        "xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV"
+      )
+      |> BsvRpc.PrivateKey.create()
+
+    tx =
+      BsvRpc.Transaction.create_from_hex(
+        "0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000"
+      )
+
+    utxo = %BsvRpc.UTXO{
+      script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"),
+      value: 5_000_000_000,
+      transaction: <<>>,
+      output: 0
+    }
+
+    assert {:error, "Number of keys must match number of transaction inputs."} ==
+             BsvRpc.Transaction.sign(tx, [k, k], [utxo])
+
+    assert_raise RuntimeError, fn -> BsvRpc.Transaction.sign!(tx, [k, k], [utxo]) end
+  end
+
+  test "number of utxos should match inputs when signing" do
+    {:ok, k} =
+      ExtendedKey.from_string(
+        "xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV"
+      )
+      |> BsvRpc.PrivateKey.create()
+
+    tx =
+      BsvRpc.Transaction.create_from_hex(
+        "0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000"
+      )
+
+    utxo = %BsvRpc.UTXO{
+      script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"),
+      value: 5_000_000_000,
+      transaction: <<>>,
+      output: 0
+    }
+
+    assert {:error, "Number of keys must match number of transaction inputs."} ==
+             BsvRpc.Transaction.sign(tx, [k, k], [utxo])
+
+    assert_raise RuntimeError, fn -> BsvRpc.Transaction.sign!(tx, [k], [utxo, utxo]) end
+  end
 end

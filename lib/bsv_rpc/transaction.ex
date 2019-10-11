@@ -298,31 +298,92 @@ defmodule BsvRpc.Transaction do
     ...>   |> BsvRpc.PrivateKey.create()
     iex> tx = BsvRpc.Transaction.create_from_hex("0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000")
     iex> utxo = %BsvRpc.UTXO{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000, transaction: <<>>, output: 0}
-    iex> signed_tx = BsvRpc.Transaction.sign(tx, k, utxo)
+    iex> signed_tx = BsvRpc.Transaction.sign(tx, [k], [utxo])
     iex> [input | []] = signed_tx.inputs
     iex> Base.encode16(input.script_sig)
     "4730440220758CB5A38A45687AC87F2637287D8F0214BB3F4455FA55CC66F37A8BD88BD62A022019B8AE768FC3ADAD1B99779E20CF747A9AD9EA339A8FAD24CB8DDFB196457E2741210342E0EB80C57799F22624264E5F7541400B996D3B38CFFFFC12EBDA7AC921DF2F"
   """
   @spec sign(
           __MODULE__.t(),
-          BsvRpc.PrivateKey.t(),
-          BsvRpc.UTXO.t() | nil,
+          [BsvRpc.PrivateKey.t()] | BsvRpc.PrivateKey.t(),
+          [BsvRpc.UTXO.t() | nil] | BsvRpc.UTXO.t() | nil,
           BsvRpc.Sighash.t()
-        ) :: __MODULE__.t()
+        ) :: {:ok, __MODULE__.t()} | {:error, String.t()}
+  def sign(tx, keys, utxos, sigtype \\ [:sighash_all, :sighash_forkid])
+
+  def sign(
+        %__MODULE__{} = tx,
+        [%BsvRpc.PrivateKey{} | _] = keys,
+        [_h | _] = utxos,
+        sigtype
+      ) do
+    cond do
+      Enum.count(tx.inputs) != Enum.count(keys) ->
+        {:error, "Number of keys must match number of transaction inputs."}
+
+      Enum.count(tx.inputs) != Enum.count(utxos) ->
+        {:error, "Number of utxos must match number of transaction inputs."}
+
+      true ->
+        signed_inputs =
+          Enum.zip([tx.inputs, keys, utxos])
+          |> Enum.map(fn {tx_in, key, utxo} ->
+            {:ok, signed_tx_in} = BsvRpc.TransactionInput.sign(tx_in, tx, key, utxo, sigtype)
+            signed_tx_in
+          end)
+
+        {:ok, Map.put(tx, :inputs, signed_inputs)}
+    end
+  end
+
+  @doc """
+  Signs a transaction using the private key.
+
+  ## Examples
+    iex> {:ok, k} = ExtendedKey.from_string("xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV")
+    ...>   |> BsvRpc.PrivateKey.create()
+    iex> tx = BsvRpc.Transaction.create_from_hex("0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000")
+    iex> utxo = %BsvRpc.UTXO{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000, transaction: <<>>, output: 0}
+    iex> {:ok, signed_tx} = BsvRpc.Transaction.sign(tx, k, utxo)
+    iex> [input | []] = signed_tx.inputs
+    iex> Base.encode16(input.script_sig)
+    "4730440220758CB5A38A45687AC87F2637287D8F0214BB3F4455FA55CC66F37A8BD88BD62A022019B8AE768FC3ADAD1B99779E20CF747A9AD9EA339A8FAD24CB8DDFB196457E2741210342E0EB80C57799F22624264E5F7541400B996D3B38CFFFFC12EBDA7AC921DF2F"
+  """
   def sign(
         %__MODULE__{} = tx,
         %BsvRpc.PrivateKey{} = key,
-        utxo \\ nil,
-        sigtype \\ [:sighash_all, :sighash_forkid]
+        utxo,
+        sigtype
       ) do
-    signed_inputs =
-      tx.inputs
-      |> Enum.map(fn tx_in ->
-        {:ok, signed_tx_in} = BsvRpc.TransactionInput.sign(tx_in, tx, key, utxo, sigtype)
-        signed_tx_in
-      end)
+    sign(tx, [key], [utxo], sigtype)
+  end
 
-    Map.put(tx, :inputs, signed_inputs)
+  @doc """
+  Signs a transaction using the private key.
+
+  Raises an exception in case of an error.
+
+  ## Examples
+    iex> {:ok, k} = ExtendedKey.from_string("xprv9s21ZrQH143K42Wyfo4GvDT1QBNSgq5sCBPXr4zaftZr2WKCrgEzdtniz5TvRgXA6V8hi2QrUMG3QTQnqovLp2UBAqsDcaxDUP3YCA61rJV")
+    ...>   |> BsvRpc.PrivateKey.create()
+    iex> tx = BsvRpc.Transaction.create_from_hex("0100000001040800A41008F4C353626694DAC1EE5553FBD36B11AC5647528E29C7D6C89BE20000000000FFFFFFFF0200F90295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC0CF70295000000001976A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC00000000")
+    iex> utxo = %BsvRpc.UTXO{script_pubkey: Base.decode16!("76A9141D7C7B4894BE23A6495B004157F3A1BBA173C52988AC"), value: 5000000000, transaction: <<>>, output: 0}
+    iex> signed_tx = BsvRpc.Transaction.sign!(tx, k, utxo)
+    iex> [input | []] = signed_tx.inputs
+    iex> Base.encode16(input.script_sig)
+    "4730440220758CB5A38A45687AC87F2637287D8F0214BB3F4455FA55CC66F37A8BD88BD62A022019B8AE768FC3ADAD1B99779E20CF747A9AD9EA339A8FAD24CB8DDFB196457E2741210342E0EB80C57799F22624264E5F7541400B996D3B38CFFFFC12EBDA7AC921DF2F"
+  """
+  @spec sign!(
+          __MODULE__.t(),
+          [BsvRpc.PrivateKey.t()] | BsvRpc.PrivateKey.t(),
+          [BsvRpc.UTXO.t() | nil] | BsvRpc.UTXO.t() | nil,
+          BsvRpc.Sighash.t()
+        ) :: __MODULE__.t()
+  def sign!(tx, keys, utxos \\ nil, sigtype \\ [:sighash_all, :sighash_forkid]) do
+    case sign(tx, keys, utxos, sigtype) do
+      {:ok, tx} -> tx
+      {:error, reason} -> raise reason
+    end
   end
 
   @doc """
