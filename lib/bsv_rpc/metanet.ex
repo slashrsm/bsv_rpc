@@ -11,7 +11,7 @@ defmodule BsvRpc.MetaNet do
   @spec create_root_node(ExtendedKey.key(), BsvRpc.PrivateKey.t()) :: BsvRpc.MetaNet.Graph.t()
   def create_root_node(%ExtendedKey{} = metanet_key, %BsvRpc.PrivateKey{} = funding_key) do
     graph = Graph.create(metanet_key, funding_key)
-    {:ok, graph, _published_node} = publish_node(graph, "0", [])
+    {:ok, graph, _published_node} = publish_node(graph, "", [])
     graph
   end
 
@@ -22,7 +22,7 @@ defmodule BsvRpc.MetaNet do
         derivation_path,
         content
       ) do
-    metanet_key = ExtendedKey.derive_path(graph.metanet_key, "m/#{derivation_path}")
+    metanet_key = derive_metanet_key(graph, derivation_path)
 
     node_address =
       ExtendedKey.neuter(metanet_key)
@@ -34,10 +34,7 @@ defmodule BsvRpc.MetaNet do
       if is_toplevel(derivation_path) do
         metanet_key
       else
-        ExtendedKey.derive_path(
-          graph.metanet_key,
-          "m/" <> get_parent_derivation_path(derivation_path)
-        )
+        derive_metanet_key(graph, get_parent_derivation_path(derivation_path))
       end
 
     parent_address =
@@ -74,7 +71,7 @@ defmodule BsvRpc.MetaNet do
         derivation_path,
         content
       ) do
-    metanet_key = ExtendedKey.derive_path(graph.metanet_key, "m/#{derivation_path}")
+    metanet_key = derive_metanet_key(graph, derivation_path)
 
     node_address =
       ExtendedKey.neuter(metanet_key)
@@ -86,10 +83,7 @@ defmodule BsvRpc.MetaNet do
       if is_toplevel(derivation_path) do
         metanet_key
       else
-        ExtendedKey.derive_path(
-          graph.metanet_key,
-          "m/" <> get_parent_derivation_path(derivation_path)
-        )
+        derive_metanet_key(graph, get_parent_derivation_path(derivation_path))
       end
 
     metanet_headers =
@@ -213,7 +207,12 @@ defmodule BsvRpc.MetaNet do
   end
 
   @spec is_toplevel(String.t()) :: boolean()
-  defp is_toplevel(derivation_path) do
-    String.split(derivation_path, "/") |> length() == 1
-  end
+  defp is_toplevel(""), do: true
+  defp is_toplevel(_), do: false
+
+  @spec derive_metanet_key(BsvRpc.MetaNet.Graph.t(), String.t()) :: ExtendedKey.key()
+  defp derive_metanet_key(%BsvRpc.MetaNet.Graph{} = graph, ""), do: graph.metanet_key
+
+  defp derive_metanet_key(%BsvRpc.MetaNet.Graph{} = graph, derivation_path),
+    do: ExtendedKey.derive_path(graph.metanet_key, "m/#{derivation_path}")
 end
