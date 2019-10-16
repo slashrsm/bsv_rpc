@@ -137,14 +137,9 @@ defmodule BsvRpc.TransactionInput do
     # TODO Check if it is the correct key.
     sighash = BsvRpc.Sighash.sighash(tx_in, tx, key, utxo, sigtype)
 
-    case :libsecp256k1.ecdsa_sign(sighash, key.key, :default, "") do
-      {:error, reason} ->
-        {:error, "Unable to sign: " <> to_string(reason)}
-
-      {:ok, signature} ->
-        {:ok, public_key} = BsvRpc.PublicKey.create(key)
-        {:ok, Map.put(tx_in, :script_sig, p2pkh_script_sig(signature, public_key, sigtype))}
-    end
+    {:ok, signature} = :libsecp256k1.ecdsa_sign(sighash, key.key, :default, "")
+    {:ok, public_key} = BsvRpc.PublicKey.create(key)
+    {:ok, Map.put(tx_in, :script_sig, p2pkh_script_sig(signature, public_key, sigtype))}
   end
 
   @spec p2pkh_script_sig(binary, BsvRpc.PublicKey.t(), BsvRpc.Sighash.t()) :: binary

@@ -36,6 +36,7 @@ defmodule BsvRpc.PublicKeyTest do
 
   test "unable to decode" do
     assert {:error, "Could not decode public key."} == BsvRpc.PublicKey.create("foobarbaz")
+    assert_raise RuntimeError, fn -> BsvRpc.PublicKey.create!("foobarbaz") end
   end
 
   test "from invalid private key" do
