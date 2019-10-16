@@ -282,8 +282,8 @@ defmodule BsvRpc.Transaction do
     in_value =
       transaction.inputs
       |> Enum.map(fn input ->
-        BsvRpc.get_transaction(Base.encode16(input.previous_transaction)).outputs
-        |> Enum.at(input.previous_output)
+        {:ok, tx} = BsvRpc.get_transaction(Base.encode16(input.previous_transaction))
+        Enum.at(tx.outputs, input.previous_output)
       end)
       |> Enum.reduce(0, fn output, acc -> acc + output.value end)
 

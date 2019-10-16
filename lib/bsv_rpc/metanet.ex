@@ -55,7 +55,7 @@ defmodule BsvRpc.MetaNet do
 
     ftx = funding_tx(graph.funding_key, parent_address, amount)
     id = BsvRpc.Transaction.id(ftx) |> String.downcase()
-    ^id = BsvRpc.broadcast_transaction(ftx)
+    {:ok, ^id} = BsvRpc.broadcast_transaction(ftx)
     Logger.debug("Funding TX for MetaNet node #{node_address.address}: #{id}")
 
     funding_utxo = BsvRpc.UTXO.create(ftx, 0)
@@ -107,7 +107,7 @@ defmodule BsvRpc.MetaNet do
     meta_node_tx = metanet_node_tx(parent_key, funding_utxo, metanet_headers ++ content)
 
     id = BsvRpc.Transaction.id(meta_node_tx) |> String.downcase()
-    ^id = BsvRpc.broadcast_transaction(meta_node_tx)
+    {:ok, ^id} = BsvRpc.broadcast_transaction(meta_node_tx)
     Logger.info("Node TX for MetaNet node #{node_address.address}: #{id}")
 
     {:ok, Graph.add_node(graph, meta_node_tx, derivation_path), meta_node_tx}
@@ -162,7 +162,7 @@ defmodule BsvRpc.MetaNet do
     BsvRpc.Transaction.sign!(
       funding_tx,
       funding_key,
-      BsvRpc.get_transaction(utxo["tx_hash"]) |> BsvRpc.UTXO.create(utxo["tx_pos"])
+      BsvRpc.get_transaction(utxo["tx_hash"]) |> elem(1) |> BsvRpc.UTXO.create(utxo["tx_pos"])
     )
   end
 

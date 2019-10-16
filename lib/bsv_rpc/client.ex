@@ -29,7 +29,7 @@ defmodule BsvRpc.Client do
   end
 
   @doc """
-  Sends JSON-RPC message.
+  Calls a Bitcoin's JSON-RPC endpoint.
   """
   def handle_call({:call_endpoint, method, params}, _from, state) do
     response =
@@ -48,13 +48,25 @@ defmodule BsvRpc.Client do
     case response do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         {:ok, %{"error" => nil, "id" => "bsv_rpc", "result" => result}} = Poison.decode(body)
-        {:reply, result, state}
+        {:reply, {:ok, result}, state}
+
+      {:ok, %HTTPoison.Response{body: body}} ->
+        case Poison.decode(body) do
+          {:ok, %{"error" => %{"message" => message}, "id" => "bsv_rpc", "result" => nil}} ->
+            {:reply, {:error, message}, state}
+
+          _ ->
+            {:reply, {:error, "Unknown error."}, state}
+        end
 
       _ ->
-        {:reply, :error, state}
+        {:reply, {:error, "Unknown error."}, state}
     end
   end
 
+  @doc """
+  Calls a Bitcoin's JSON-RPC endpoint.
+  """
   def handle_call({:call_endpoint, method}, from, state) do
     BsvRpc.Client.handle_call({:call_endpoint, method, []}, from, state)
   end

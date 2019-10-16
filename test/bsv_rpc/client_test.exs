@@ -73,7 +73,7 @@ defmodule BsvRpc.ClientTest do
       )
 
     assert response ==
-             {:reply, %{"foo" => "bar"},
+             {:reply, {:ok, %{"foo" => "bar"}},
               %{host: "host", password: "password", port: 12_345, username: "username"}}
 
     assert called(
@@ -112,7 +112,118 @@ defmodule BsvRpc.ClientTest do
       )
 
     assert response ==
-             {:reply, %{"foo" => "bar"},
+             {:reply, {:ok, %{"foo" => "bar"}},
+              %{host: "host", password: "password", port: 12_345, username: "username"}}
+
+    assert called(
+             HTTPoison.post(
+               "http://host:12345",
+               "{\"params\":[],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
+               [{"Content-Type", "text/plain"}],
+               hackney: [basic_auth: {"username", "password"}]
+             )
+           )
+  end
+
+  test_with_mock "errors are passed on", _context, HTTPoison, [],
+    post: fn _endpoint, _body, _header, _options ->
+      {:ok,
+       %HTTPoison.Response{
+         status_code: 500,
+         body:
+           Poison.encode!(%{
+             "error" => %{
+               "code" => -27,
+               "message" => "transaction already in block chain"
+             },
+             "id" => "bsv_rpc",
+             "result" => nil
+           })
+       }}
+    end do
+    response =
+      BsvRpc.Client.handle_call(
+        {:call_endpoint, "somemethod"},
+        self(),
+        %{
+          host: "host",
+          port: 12_345,
+          username: "username",
+          password: "password"
+        }
+      )
+
+    assert response ==
+             {:reply, {:error, "transaction already in block chain"},
+              %{host: "host", password: "password", port: 12_345, username: "username"}}
+
+    assert called(
+             HTTPoison.post(
+               "http://host:12345",
+               "{\"params\":[],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
+               [{"Content-Type", "text/plain"}],
+               hackney: [basic_auth: {"username", "password"}]
+             )
+           )
+  end
+
+  test_with_mock "unknown errors", _context, HTTPoison, [],
+    post: fn _endpoint, _body, _header, _options ->
+      {:ok,
+       %HTTPoison.Response{
+         status_code: 500,
+         body:
+           Poison.encode!(%{
+             "error" => %{
+               "code" => -27
+             },
+             "id" => "bsv_rpc",
+             "result" => nil
+           })
+       }}
+    end do
+    response =
+      BsvRpc.Client.handle_call(
+        {:call_endpoint, "somemethod"},
+        self(),
+        %{
+          host: "host",
+          port: 12_345,
+          username: "username",
+          password: "password"
+        }
+      )
+
+    assert response ==
+             {:reply, {:error, "Unknown error."},
+              %{host: "host", password: "password", port: 12_345, username: "username"}}
+
+    assert called(
+             HTTPoison.post(
+               "http://host:12345",
+               "{\"params\":[],\"method\":\"somemethod\",\"jsonrpc\":\"1.0\",\"id\":\"bsv_rpc\"}",
+               [{"Content-Type", "text/plain"}],
+               hackney: [basic_auth: {"username", "password"}]
+             )
+           )
+  end
+
+  test_with_mock "unknown response", _context, HTTPoison, [],
+    post: fn _endpoint, _body, _header, _options -> :error end do
+    response =
+      BsvRpc.Client.handle_call(
+        {:call_endpoint, "somemethod"},
+        self(),
+        %{
+          host: "host",
+          port: 12_345,
+          username: "username",
+          password: "password"
+        }
+      )
+
+    assert response ==
+             {:reply, {:error, "Unknown error."},
               %{host: "host", password: "password", port: 12_345, username: "username"}}
 
     assert called(
