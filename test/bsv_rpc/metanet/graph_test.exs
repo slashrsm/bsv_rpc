@@ -1,4 +1,4 @@
-defmodule BsvRpc.MetaNet.GrpahTest do
+defmodule BsvRpc.MetaNet.GraphTest do
   use ExUnit.Case
   doctest BsvRpc.MetaNet.Graph
 end

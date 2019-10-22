@@ -8,6 +8,9 @@ defmodule BsvRpc.MetaNet do
 
   @network_flag "meta"
 
+  @doc """
+  Creates a MetaNet root node on the blockchain and creates a graph struct representing it.
+  """
   @spec create_root_node(ExtendedKey.key(), BsvRpc.PrivateKey.t()) :: BsvRpc.MetaNet.Graph.t()
   def create_root_node(%ExtendedKey{} = metanet_key, %BsvRpc.PrivateKey{} = funding_key) do
     graph = Graph.create(metanet_key, funding_key)
@@ -15,6 +18,11 @@ defmodule BsvRpc.MetaNet do
     graph
   end
 
+  @doc """
+  Publishes a MetaNet node on the blockchain.
+
+  Uses funding key in the graph struct to fund the MetaNet node transaction.
+  """
   @spec publish_node(BsvRpc.MetaNet.Graph.t(), String.t(), list()) ::
           {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
   def publish_node(
@@ -63,6 +71,11 @@ defmodule BsvRpc.MetaNet do
     publish_node(graph, funding_utxo, derivation_path, content)
   end
 
+  @doc """
+  Publishes a MetaNet node on the blockchain.
+
+  Uses `funding_utxo` to fund the MetaNet node transaction.
+  """
   @spec publish_node(BsvRpc.MetaNet.Graph.t(), BsvRpc.UTXO.t(), String.t(), list()) ::
           {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
   def publish_node(
