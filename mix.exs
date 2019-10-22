@@ -2,7 +2,7 @@ defmodule BsvRpc.MixProject do
   use Mix.Project
 
   defp description do
-    "Bitcoin SV JSON-RPC client."
+    "Bitcoin SV library (basic tools, transaction signing, JSON-RPC client, MetaNet library, ...)."
   end
 
   def project do
