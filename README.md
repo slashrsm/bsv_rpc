@@ -5,7 +5,7 @@
 [![Inline docs](http://inch-ci.org/github/slashrsm/bsv_rpc.svg)](http://hexdocs.pm/bsv_rpc/)
 [![Hex Version](http://img.shields.io/hexpm/v/bsv_rpc.svg?style=flat)](https://hex.pm/packages/bsv_rpc)
 
-A client library to talk to the JSON-RPC endpoint on a Bitcoin node. 
+A client library to talk to the JSON-RPC endpoint on a Bitcoin node (and much more! - check the ever expanding list of features below). The long term plan is to develop library into a fully-fledged Bitcoin library and split it into multiple libraries. It will stay in a single project for easier early stage development.
 
 **Warning:** Library is under active development and will most likely keep changing in the foreseeable future. 
 
