@@ -9,9 +9,6 @@ A client library to talk to the JSON-RPC endpoint on a Bitcoin node (and much mo
 
 **Warning:** Library is under active development and will most likely keep changing in the foreseeable future. 
 
-Most of the things should work with any Bitcoin flavour (Bitcoin Core, Bitcoin Cash), but I do currently not test
-with any other implementation than Bitcoin SV.
-
 ## Features
 
 * API to work with basic Bitcoin structures
