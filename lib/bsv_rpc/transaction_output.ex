@@ -62,18 +62,18 @@ defmodule BsvRpc.TransactionOutput do
   ## Example
 
     iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
-    iex> tx_out|> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
+    iex> tx_out|> Base.decode16!() |> BsvRpc.TransactionOutput.create()
     %BsvRpc.TransactionOutput{
       script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218,
         58, 115, 25, 64, 161, 241, 147, 45, 133, 63, 136, 172>>,
       value: 10289728209
     }
     iex> tx_out = tx_out <> "FF"
-    iex> tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
+    iex> tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create()
     ** (MatchError) no match of right hand side value: {[%BsvRpc.TransactionOutput{script_pubkey: <<118, 169, 20, 55, 229, 207, 18, 237, 236, 118, 204, 137, 218, 58, 115, 25, 64, 161, 241, 147, 45, 133, 63, 136, 172>>, value: 10289728209}], <<255>>}
   """
-  @spec create_single(binary) :: __MODULE__.t()
-  def create_single(tx_out_blob) do
+  @spec create(binary) :: __MODULE__.t()
+  def create(tx_out_blob) do
     {[tx_in | []], <<>>} = do_create(tx_out_blob, [], 1)
     tx_in
   end
@@ -98,7 +98,7 @@ defmodule BsvRpc.TransactionOutput do
   ## Examples
 
     iex> tx_out = "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
-    iex> t = tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
+    iex> t = tx_out |> Base.decode16!() |> BsvRpc.TransactionOutput.create()
     iex> t |> BsvRpc.TransactionOutput.to_binary() |> Base.encode16()
     "D1CA5065020000001976A91437E5CF12EDEC76CC89DA3A731940A1F1932D853F88AC"
   """

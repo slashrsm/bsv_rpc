@@ -58,7 +58,7 @@ defmodule BsvRpc.TransactionInput do
   ## Example
 
     iex> tx_in = "CF3E4414A1A65B96A5485F7A497FED32C0C90E95E4FF334A79559AD9B14920E90100000006AABBCCDDEEFFFFFFFFFF"
-    iex> tx_in |> Base.decode16!() |> BsvRpc.TransactionInput.create_single()
+    iex> tx_in |> Base.decode16!() |> BsvRpc.TransactionInput.create()
     %BsvRpc.TransactionInput{
       previous_output: 1,
       previous_transaction: <<233, 32, 73, 177, 217, 154, 85, 121, 74, 51, 255, 228, 149, 14, 201, 192, 50, 237, 127,
@@ -67,11 +67,11 @@ defmodule BsvRpc.TransactionInput do
       sequence: 4294967295
     }
     iex> tx_in = tx_in <> "FF"
-    iex> tx_in |> Base.decode16!() |> BsvRpc.TransactionOutput.create_single()
-    ** (MatchError) no match of right hand side value: <<72, 95, 122, 73, 127, 237, 50, 192, 201, 14, 149, 228, 255, 51, 74, 121, 85, 154, 217, 177, 73, 32, 233, 1, 0, 0, 0, 6, 170, 187, 204, 221, 238, 255, 255, 255, 255, 255, 255>>
+    iex> tx_in |> Base.decode16!() |> BsvRpc.TransactionInput.create()
+    ** (MatchError) no match of right hand side value: {[%BsvRpc.TransactionInput{previous_output: 1, previous_transaction: <<233, 32, 73, 177, 217, 154, 85, 121, 74, 51, 255, 228, 149, 14, 201, 192, 50, 237, 127, 73, 122, 95, 72, 165, 150, 91, 166, 161, 20, 68, 62, 207>>, script_sig: <<170, 187, 204, 221, 238, 255>>, sequence: 4294967295}], <<255>>}
   """
-  @spec create_single(binary) :: __MODULE__.t()
-  def create_single(tx_in_blob) do
+  @spec create(binary) :: __MODULE__.t()
+  def create(tx_in_blob) do
     {[tx_in | []], <<>>} = do_create(tx_in_blob, [], 1)
     tx_in
   end
@@ -104,7 +104,7 @@ defmodule BsvRpc.TransactionInput do
   ## Examples
 
     iex> tx_in = "CF3E4414A1A65B96A5485F7A497FED32C0C90E95E4FF334A79559AD9B14920E90100000006AABBCCDDEEFFFFFFFFFF"
-    iex> t = tx_in |> Base.decode16!() |> BsvRpc.TransactionInput.create_single()
+    iex> t = tx_in |> Base.decode16!() |> BsvRpc.TransactionInput.create()
     iex> t |> BsvRpc.TransactionInput.to_binary() |> Base.encode16()
     "CF3E4414A1A65B96A5485F7A497FED32C0C90E95E4FF334A79559AD9B14920E90100000006AABBCCDDEEFFFFFFFFFF"
   """
