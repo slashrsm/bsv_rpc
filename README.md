@@ -16,8 +16,8 @@ A client library to talk to the JSON-RPC endpoint on a Bitcoin node (and much mo
   * Transaction inputs
   * Transaction outputs
   * Addresses
-  * Unspent transation outputs (UTXOs)
-  * Blocks (TODO)
+  * Unspent transaction outputs (UTXOs)
+  * Blocks
   * Scripts (TODO)
 * Base58Check API
 * Various helper functions 
