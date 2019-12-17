@@ -74,14 +74,12 @@ defmodule BsvRpc.Transaction do
     iex> Base.encode16(t.hash)
     "4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"
   """
-  @spec create(binary) :: {:ok, __MODULE__.t()} ,  {:error, String.t()}
+  @spec create(binary) :: {:ok, __MODULE__.t()} | {:error, String.t()}
   def create(tx_blob) do
-    try do
-      {:ok, create!(tx_blob)}
-    rescue
-      MatchError -> {:error, "Invalid transaction structure."}
-      _ -> {:error, "Unable to create the transaction."}
-    end
+    {:ok, create!(tx_blob)}
+  rescue
+    MatchError -> {:error, "Invalid transaction structure."}
+    _ -> {:error, "Unable to create the transaction."}
   end
 
   @doc """
@@ -115,14 +113,12 @@ defmodule BsvRpc.Transaction do
     "4A5E1E4BAAB89F3A32518A88C31BC87F618F76673E2CC77AB2127B7AFDEDA33B"
 
   """
-  @spec create_from_hex(String.t()) :: {:ok, __MODULE__.t()} ,  {:error, String.t()}
+  @spec create_from_hex(String.t()) :: {:ok, __MODULE__.t()} | {:error, String.t()}
   def create_from_hex(hex) do
-    try do
-      {:ok, create_from_hex!(hex)}
-    rescue
-      MatchError -> {:error, "Invalid transaction structure."}
-      _ -> {:error, "Unable to create the transaction."}
-    end
+    {:ok, create_from_hex!(hex)}
+  rescue
+    MatchError -> {:error, "Invalid transaction structure."}
+    _ -> {:error, "Unable to create the transaction."}
   end
 
   @doc """

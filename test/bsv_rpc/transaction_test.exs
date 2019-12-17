@@ -252,4 +252,15 @@ defmodule BsvRpc.TransactionTest do
 
     assert_raise RuntimeError, fn -> BsvRpc.Transaction.sign!(tx, [k], [utxo, utxo]) end
   end
+
+  test "attempt to create with invalid blob" do
+    assert {:error, "Unable to create the transaction."} ==
+             BsvRpc.Transaction.create_from_hex("makes no sense")
+
+    assert {:error, "Invalid transaction structure."} ==
+             BsvRpc.Transaction.create_from_hex("010000")
+
+    assert {:error, "Unable to create the transaction."} ==
+             BsvRpc.Transaction.create(<<0, 0, 0, 1, 0>>)
+  end
 end
