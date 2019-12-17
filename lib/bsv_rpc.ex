@@ -161,7 +161,7 @@ defmodule BsvRpc do
   def get_transaction(hash) do
     case GenServer.call(BsvRpc, {:call_endpoint, "getrawtransaction", [hash]}) do
       {:ok, transaction_hex} ->
-        {:ok, BsvRpc.Transaction.create_from_hex(transaction_hex)}
+        {:ok, BsvRpc.Transaction.create_from_hex!(transaction_hex)}
 
       error_response ->
         error_response
@@ -228,7 +228,7 @@ defmodule BsvRpc do
 
     case response do
       {:ok, %{"hex" => signed_tx, "complete" => true}} ->
-        {:ok, BsvRpc.Transaction.create_from_hex(signed_tx)}
+        {:ok, BsvRpc.Transaction.create_from_hex!(signed_tx)}
 
       error_response ->
         error_response
