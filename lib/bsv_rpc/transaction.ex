@@ -205,6 +205,52 @@ defmodule BsvRpc.Transaction do
   end
 
   @doc """
+  Gets the id of the block that transaction belongs to (hash in the hex form).
+
+  ## Examples
+
+    iex> t = BsvRpc.Transaction.create_from_hex!("01000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF4D04FFFF001D0104455468652054696D65732030332F4A616E2F32303039204368616E63656C6C6F72206F6E206272696E6B206F66207365636F6E64206261696C6F757420666F722062616E6B73FFFFFFFF0100F2052A01000000434104678AFDB0FE5548271967F1A67130B7105CD6A828E03909A67962E0EA1F61DEB649F6BC3F4CEF38C4F35504E51EC112DE5C384DF7BA0B8D578A4C702B6BF11D5FAC00000000")
+    iex> BsvRpc.Transaction.block_id(t)
+    nil
+    iex> t = Map.put(t, :block, Base.decode16!("000000000019D6689C085AE165831E934FF763AE46A2A6C172B3F1B60A8CE26F"))
+    iex> BsvRpc.Transaction.block_id(t)
+    "000000000019D6689C085AE165831E934FF763AE46A2A6C172B3F1B60A8CE26F"
+  """
+  @spec block_id(__MODULE__.t()) :: String.t()
+  def block_id(transaction) do
+    case transaction.block do
+      nil ->
+        nil
+
+      _ ->
+        Base.encode16(transaction.block)
+    end
+  end
+
+  @doc """
+  Gets the hash of the block that transaction belongs to.
+
+  ## Examples
+
+    iex> t = BsvRpc.Transaction.create_from_hex!("01000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF4D04FFFF001D0104455468652054696D65732030332F4A616E2F32303039204368616E63656C6C6F72206F6E206272696E6B206F66207365636F6E64206261696C6F757420666F722062616E6B73FFFFFFFF0100F2052A01000000434104678AFDB0FE5548271967F1A67130B7105CD6A828E03909A67962E0EA1F61DEB649F6BC3F4CEF38C4F35504E51EC112DE5C384DF7BA0B8D578A4C702B6BF11D5FAC00000000")
+    iex> BsvRpc.Transaction.block_hash(t)
+    nil
+    iex> t = Map.put(t, :block, Base.decode16!("000000000019D6689C085AE165831E934FF763AE46A2A6C172B3F1B60A8CE26F"))
+    iex> BsvRpc.Transaction.block_hash(t)
+    <<0, 0, 0, 0, 0, 25, 214, 104, 156, 8, 90, 225, 101, 131, 30, 147, 79, 247, 99, 174, 70, 162, 166, 193, 114, 179, 241, 182, 10, 140, 226, 111>>
+  """
+  @spec block_hash(__MODULE__.t()) :: binary()
+  def block_hash(transaction) do
+    case transaction.hash do
+      nil ->
+        nil
+
+      _ ->
+        transaction.block
+    end
+  end
+
+  @doc """
   Generates a P2PKH transaction to send funds to a single address.
 
   ## Arguments
