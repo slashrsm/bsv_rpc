@@ -117,9 +117,120 @@ defmodule BsvRpc.Helpers do
     iex> BsvRpc.Helpers.to_varlen_data(<<0xff>>)
     <<0x01, 0xff>>
   """
-  @spec(to_varlen_data(binary) :: binary, binary)
+  @spec to_varlen_data(binary) :: binary
   def to_varlen_data(data) do
     BsvRpc.Helpers.to_varint(byte_size(data)) <> data
+  end
+
+  @doc """
+  Gets letgth of PUSHDATA from the beginning of a binary.
+
+  ## Examples
+
+    iex> BsvRpc.Helpers.get_pushdata_length(<<0x01>>)
+    {1, <<>>}
+
+    iex> BsvRpc.Helpers.get_pushdata_length(<<0x4C, 0x80, 0x00, 0x12, 0x34>>)
+    {128, <<0x00, 0x12, 0x34>>}
+
+    iex> BsvRpc.Helpers.get_pushdata_length(<<0x4D, 0x01, 0xFF, 0x00>>)
+    {65281, <<0x00>>}
+
+    iex> BsvRpc.Helpers.get_pushdata_length(<<0x4E, 0x01, 0x00, 0x00, 0xFF, 0xEE>>)
+    {4278190081, <<0xEE>>}
+  """
+  @spec get_pushdata_length(binary) :: {non_neg_integer(), binary()}
+  def get_pushdata_length(<<prefix::little-size(8), rest::binary>>) do
+    case prefix do
+      0x4E ->
+        <<len::little-size(32), rest::binary>> = rest
+        {len, rest}
+
+      0x4D ->
+        <<len::little-size(16), rest::binary>> = rest
+        {len, rest}
+
+      0x4C ->
+        <<len::little-size(8), rest::binary>> = rest
+        {len, rest}
+
+      _ ->
+        {prefix, rest}
+    end
+  end
+
+  @doc """
+  Gets OP_PUSHDATA data from the beginning of the binary.
+
+  Returns a tuple with the OP_PUSHDATA data as the first element and the rest of the original binary as
+  the second.
+
+  ## Examples
+    iex> BsvRpc.Helpers.get_pushdata(<<0x01, 0xFF, 0xEE>>)
+    {<<255>>, <<0xEE>>}
+
+    iex> BsvRpc.Helpers.get_pushdata(<<0x4C, 0x01, 0xEE, 0x34>>)
+    {<<0xEE>>, <<0x34>>}
+
+    iex> BsvRpc.Helpers.get_pushdata(<<0x4D, 0x01, 0x00, 0xEE, 0x34>>)
+    {<<0xEE>>, <<0x34>>}
+
+    iex> BsvRpc.Helpers.get_pushdata(<<0x4E, 0x01, 0x00, 0x00, 0x00, 0xEE, 0x34>>)
+    {<<0xEE>>, <<0x34>>}
+  """
+  @spec get_pushdata(binary) :: {binary, binary}
+  def get_pushdata(data) do
+    {len, data} = get_pushdata_length(data)
+    <<data::binary-size(len), rest::binary>> = data
+    {data, rest}
+  end
+
+  @doc """
+  Gets variable length integer representation of a number.
+
+  ## Examples
+
+    iex> BsvRpc.Helpers.get_pushdata_opcode(<<0x00, 0x00>>)
+    <<0x02>>
+
+    iex> BsvRpc.Helpers.get_pushdata_opcode(:crypto.strong_rand_bytes(0x4F))
+    <<0x4C, 0x4F>>
+
+    iex> BsvRpc.Helpers.get_pushdata_opcode(:crypto.strong_rand_bytes(0xFF00))
+    <<0x4D, 0x00, 0xFF>>
+
+    iex> BsvRpc.Helpers.get_pushdata_opcode(:crypto.strong_rand_bytes(0xFFFF01))
+    <<0x4E, 0x01, 0xFF, 0xFF, 0x00>>
+  """
+  @spec get_pushdata_opcode(binary) :: binary
+  def get_pushdata_opcode(data) when byte_size(data) < 0x4C,
+    do: <<byte_size(data)::little-size(8)>>
+
+  def get_pushdata_opcode(data) when byte_size(data) <= 0xFF,
+    do: <<0x4C, byte_size(data)::little-size(8)>>
+
+  def get_pushdata_opcode(data) when byte_size(data) <= 0xFFFF,
+    do: <<0x4D, byte_size(data)::little-size(16)>>
+
+  def get_pushdata_opcode(data) when byte_size(data) <= 0xFFFFFFFF,
+    do: <<0x4E, byte_size(data)::little-size(32)>>
+
+  def get_pushdata_opcode(_), do: raise("Can't push more than 4GB.")
+
+  @doc """
+  Prefixed data with the relevant OP_PUSHDATA op code.
+
+  ## Examples
+
+    iex> BsvRpc.Helpers.to_pushdata(<<0xFF, 0xEE>>)
+    <<0x02, 0xFF, 0xEE>>
+
+    iex> BsvRpc.Helpers.to_pushdata(<<0xFF>>)
+    <<0x01, 0xFF>>
+  """
+  @spec to_pushdata(binary) :: binary
+  def to_pushdata(data) do
+    BsvRpc.Helpers.get_pushdata_opcode(data) <> data
   end
 
   @doc """

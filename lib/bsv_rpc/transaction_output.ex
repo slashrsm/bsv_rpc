@@ -161,7 +161,7 @@ defmodule BsvRpc.TransactionOutput do
       script_pubkey:
         <<@op_false, @op_return>> <>
           Enum.reduce(content, <<>>, fn item, acc ->
-            acc <> BsvRpc.Helpers.to_varlen_data(item)
+            acc <> BsvRpc.Helpers.to_pushdata(item)
           end)
     }
   end
