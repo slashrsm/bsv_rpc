@@ -165,4 +165,230 @@ defmodule BsvRpc.TransactionOutput do
           end)
     }
   end
+
+  @doc """
+  Gets the index of an output with the provided script pubkey.
+
+  Returns index of the matching output or nil if not found.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.find_by_script_pubkey!([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], <<0xFF>>)
+    1
+
+    iex> BsvRpc.TransactionOutput.find_by_script_pubkey!([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], <<0xAA>>)
+    nil
+  """
+  @spec find_by_script_pubkey!([__MODULE__.t()], binary()) :: non_neg_integer | nil
+  def find_by_script_pubkey!(outputs, script_pub_key) do
+    Enum.find_index(outputs, fn output ->
+      output.script_pubkey == script_pub_key
+    end)
+  end
+
+  @doc """
+  Gets the index of an output with the provided script pubkey.
+
+  Returns {:ok, index} or {:error, "Could not find output."} nil if not found.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.find_by_script_pubkey([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], <<0xFF>>)
+    {:ok, 1}
+
+    iex> BsvRpc.TransactionOutput.find_by_script_pubkey([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 0,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], <<0xAA>>)
+    {:error, "Could not find output."}
+  """
+  @spec find_by_script_pubkey([__MODULE__.t()], binary()) ::
+          {:ok, non_neg_integer} | {:error, String.t()}
+  def find_by_script_pubkey(outputs, script_pub_key) do
+    case find_by_script_pubkey!(outputs, script_pub_key) do
+      nil -> {:error, "Could not find output."}
+      index -> {:ok, index}
+    end
+  end
+
+  @doc """
+  Gets the index of an output with the provided value.
+
+  Returns index of the matching output or nil if not found.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.find_by_value!([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], 456)
+    1
+
+    iex> BsvRpc.TransactionOutput.find_by_value!([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], 0)
+    nil
+  """
+  @spec find_by_value!([__MODULE__.t()], non_neg_integer()) :: non_neg_integer | nil
+  def find_by_value!(outputs, value) do
+    Enum.find_index(outputs, fn output ->
+      output.value == value
+    end)
+  end
+
+  @doc """
+  Gets the index of an output with the provided value.
+
+  Returns {:ok, index} or {:error, "Could not find output."} nil if not found.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.find_by_value([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], 456)
+    {:ok, 1}
+
+    iex> BsvRpc.TransactionOutput.find_by_value([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }], 0)
+    {:error, "Could not find output."}
+  """
+  @spec find_by_value([__MODULE__.t()], non_neg_integer()) ::
+          {:ok, non_neg_integer} | {:error, String.t()}
+  def find_by_value(outputs, value) do
+    case find_by_value!(outputs, value) do
+      nil -> {:error, "Could not find output."}
+      index -> {:ok, index}
+    end
+  end
+
+  @doc """
+  Gets the index of a data output (OP_FALSE OP_RETURN or OP_RETURN ...).
+
+  Returns index of the matching output or nil if not found.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.find_data_output!([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00, 0x6A, 0xFF>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }])
+    0
+
+    iex> BsvRpc.TransactionOutput.find_data_output!([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }])
+    nil
+  """
+  @spec find_data_output!([__MODULE__.t()]) :: non_neg_integer() | nil
+  def find_data_output!(outputs) do
+    Enum.find_index(outputs, fn output ->
+      case output.script_pubkey do
+        <<0x00, 0x6A, _rest::binary>> -> true
+        <<0x6A, _rest::binary>> -> true
+        _ -> false
+      end
+    end)
+  end
+
+  @doc """
+  Gets the index of a data output (OP_FALSE OP_RETURN or OP_RETURN ...).
+
+  Returns {:ok, index} or {:error, "Data output not found."} nil if not found.
+
+  ## Examples
+
+    iex> BsvRpc.TransactionOutput.find_data_output([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00, 0x6A, 0xFF>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }])
+    {:ok, 0}
+
+    iex> BsvRpc.TransactionOutput.find_data_output([
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 123,
+    ...>     script_pubkey: <<0x00>>
+    ...>   },
+    ...>   %BsvRpc.TransactionOutput{
+    ...>     value: 456,
+    ...>     script_pubkey: <<0xFF>>
+    ...>   }])
+    {:error, "Data output not found."}
+  """
+  @spec find_data_output([__MODULE__.t()]) ::
+          {:ok, non_neg_integer()} | {:error, String.t()}
+  def find_data_output(outputs) do
+    case find_data_output!(outputs) do
+      nil -> {:error, "Data output not found."}
+      index -> {:ok, index}
+    end
+  end
 end
