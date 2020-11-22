@@ -21,68 +21,22 @@ defmodule BsvRpc.MetaNet do
   @doc """
   Publishes a MetaNet node on the blockchain.
 
-  Uses funding key in the graph struct to fund the MetaNet node transaction.
-  """
-  @spec publish_node(BsvRpc.MetaNet.Graph.t(), String.t(), list()) ::
-          {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
-  def publish_node(
-        %Graph{} = graph,
-        derivation_path,
-        content
-      ) do
-    metanet_key = derive_metanet_key(graph, derivation_path)
-
-    node_address =
-      ExtendedKey.neuter(metanet_key)
-      |> BsvRpc.PublicKey.create()
-      |> elem(1)
-      |> BsvRpc.Address.create!(:mainnet, :pubkey)
-
-    parent_key =
-      if is_toplevel(derivation_path) do
-        metanet_key
-      else
-        derive_metanet_key(graph, get_parent_derivation_path(derivation_path))
-      end
-
-    parent_address =
-      parent_key
-      |> ExtendedKey.neuter()
-      |> BsvRpc.PublicKey.create()
-      |> elem(1)
-      |> BsvRpc.Address.create!(:mainnet, :pubkey)
-
-    # Simplest MetaNet transaction with one input and one OP_RETURN output will
-    # be about 250 bytes. But dust limit is 546 so at least that.
-    # TODO need to consider multiple inputs
-    amount =
-      case 250 + Enum.reduce(content, 0, fn item, acc -> acc + byte_size(item) end) do
-        fee when fee > 546 -> fee
-        _ -> 546
-      end
-
-    ftx = funding_tx(graph.funding_key, parent_address, amount)
-    id = BsvRpc.Transaction.id(ftx) |> String.downcase()
-    {:ok, ^id} = BsvRpc.broadcast_transaction(ftx)
-    Logger.debug("Funding TX for MetaNet node #{node_address.address}: #{id}")
-
-    funding_utxo = BsvRpc.UTXO.create(ftx, 0)
-
-    publish_node(graph, funding_utxo, derivation_path, content)
-  end
-
-  @doc """
-  Publishes a MetaNet node on the blockchain.
-
   Uses `funding_utxo` to fund the MetaNet node transaction.
   """
-  @spec publish_node(BsvRpc.MetaNet.Graph.t(), BsvRpc.UTXO.t(), String.t(), list()) ::
+  @spec publish_node(
+          BsvRpc.MetaNet.Graph.t(),
+          BsvRpc.UTXO.t(),
+          String.t(),
+          list(),
+          (BsvRpc.Transaction.t() -> {:ok, String.t()} | {:error, String.t()})
+        ) ::
           {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
   def publish_node(
         %Graph{} = graph,
         %BsvRpc.UTXO{} = funding_utxo,
         derivation_path,
-        content
+        content,
+        broadcaster_functon
       ) do
     metanet_key = derive_metanet_key(graph, derivation_path)
 
@@ -120,10 +74,92 @@ defmodule BsvRpc.MetaNet do
     meta_node_tx = metanet_node_tx(parent_key, funding_utxo, metanet_headers ++ content)
 
     id = BsvRpc.Transaction.id(meta_node_tx) |> String.downcase()
-    {:ok, ^id} = BsvRpc.broadcast_transaction(meta_node_tx)
+    {:ok, ^id} = broadcaster_functon.(meta_node_tx)
     Logger.info("Node TX for MetaNet node #{node_address.address}: #{id}")
 
     {:ok, Graph.add_node(graph, meta_node_tx, derivation_path), meta_node_tx}
+  end
+
+  @spec publish_node(BsvRpc.MetaNet.Graph.t(), BsvRpc.UTXO.t(), String.t(), list()) ::
+          {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
+  def publish_node(
+        %Graph{} = graph,
+        %BsvRpc.UTXO{} = funding_utxo,
+        derivation_path,
+        content
+      ) do
+    publish_node(graph, funding_utxo, derivation_path, content, fn tx ->
+      BsvRpc.broadcast_transaction(tx)
+    end)
+  end
+
+  @doc """
+  Publishes a MetaNet node on the blockchain.
+
+  Uses funding key in the graph struct to fund the MetaNet node transaction.
+  """
+  @spec publish_node(
+          BsvRpc.MetaNet.Graph.t(),
+          String.t(),
+          list(),
+          (BsvRpc.Transaction.t() -> {:ok, String.t()} | {:error, String.t()})
+        ) ::
+          {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
+  def publish_node(
+        %Graph{} = graph,
+        derivation_path,
+        content,
+        broadcaster_functon
+      ) do
+    metanet_key = derive_metanet_key(graph, derivation_path)
+
+    node_address =
+      ExtendedKey.neuter(metanet_key)
+      |> BsvRpc.PublicKey.create()
+      |> elem(1)
+      |> BsvRpc.Address.create!(:mainnet, :pubkey)
+
+    parent_key =
+      if is_toplevel(derivation_path) do
+        metanet_key
+      else
+        derive_metanet_key(graph, get_parent_derivation_path(derivation_path))
+      end
+
+    parent_address =
+      parent_key
+      |> ExtendedKey.neuter()
+      |> BsvRpc.PublicKey.create()
+      |> elem(1)
+      |> BsvRpc.Address.create!(:mainnet, :pubkey)
+
+    # Simplest MetaNet transaction with one input and one OP_RETURN output will
+    # be about 250 bytes. But dust limit is 546 so at least that.
+    # TODO need to consider multiple inputs
+    amount =
+      case 250 + Enum.reduce(content, 0, fn item, acc -> acc + byte_size(item) end) do
+        fee when fee > 546 -> fee
+        _ -> 546
+      end
+
+    ftx = funding_tx(graph.funding_key, parent_address, amount)
+    id = BsvRpc.Transaction.id(ftx) |> String.downcase()
+    {:ok, ^id} = broadcaster_functon.(ftx)
+    Logger.debug("Funding TX for MetaNet node #{node_address.address}: #{id}")
+
+    funding_utxo = BsvRpc.UTXO.create(ftx, 0)
+
+    publish_node(graph, funding_utxo, derivation_path, content)
+  end
+
+  @spec publish_node(BsvRpc.MetaNet.Graph.t(), String.t(), list()) ::
+          {:ok, BsvRpc.MetaNet.Graph.t(), BsvRpc.Transaction.t()}
+  def publish_node(
+        %Graph{} = graph,
+        derivation_path,
+        content
+      ) do
+    publish_node(graph, derivation_path, content, fn tx -> BsvRpc.broadcast_transaction(tx) end)
   end
 
   @spec funding_tx(BsvRpc.PrivateKey.t(), BsvRpc.Address.t(), non_neg_integer) ::
